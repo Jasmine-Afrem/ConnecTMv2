@@ -1,15 +1,14 @@
-import { connect, connection } from "@/dbConfig/dbConfig"; // Import the connection from your MySQL config
+import { connect, connection } from "@/dbConfig/dbConfig";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-// Define a type for your User
 interface User {
   id: number;
   email: string;
   password_hash: string;
 }
 
-// Establish database connection
 connect();
 
 export async function POST(request: NextRequest) {
@@ -22,28 +21,41 @@ export async function POST(request: NextRequest) {
     // Check if user exists (by email)
     const [rows] = await connection.promise().query('SELECT * FROM Users WHERE email = ?', [email]);
 
-    // Cast rows to User[] manually
     const users = rows as User[];
 
     if (users.length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 400 });
     }
 
-    const user = users[0]; // Now TypeScript knows that `user` is of type `User`
-
-    // Compare the provided password with the hashed password
+    const user = users[0];
     const isPasswordValid = await bcryptjs.compare(password, user.password_hash);
 
     if (!isPasswordValid) {
       return NextResponse.json({ error: "Invalid password" }, { status: 400 });
     }
 
-    // Return success if credentials are valid
-    return NextResponse.json({
+    // Generate JWT token on successful login
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: '2h' } // Token expires in 2 hours
+    );
+
+    // Create response with HTTP-only cookie
+    const response = NextResponse.json({
       message: "Login successful",
       success: true,
-      userId: user.id, // You can return additional user details if needed
     });
+
+    // Set the cookie with the JWT token
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 2 * 60 * 60, // 2 hours in seconds
+      path: '/',
+    });
+
+    return response;
 
   } catch (error: unknown) {
     console.error("Error: ", error);

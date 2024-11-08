@@ -1,4 +1,5 @@
-'use client'; 
+'use client';
+
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
@@ -23,31 +24,38 @@ const Header: React.FC<HeaderProps> = ({ user, skillPoints, signIn, signOut }) =
   return (
     <StyledHeader>
       <LogoSection>
-        <StyledLogo>LocalSkills</StyledLogo>
+        <StyledLogo>ConnecTM</StyledLogo>
+
+        {/* Mobile Hamburger Button (only for small screens) */}
         <MobileMenuButton onClick={toggleMobileMenu} aria-label="Toggle mobile menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 12h18M3 6h18M3 18h18" />
           </svg>
         </MobileMenuButton>
-        <StyledNav $showMobileMenu={showMobileMenu}>
-          <NavButton aria-label="Toggle navigation menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </NavButton>
-        </StyledNav>
-      </LogoSection>
-      {!user ? (
-        <AuthSection>
+
+        {/* Full NavBar for larger screens */}
+        <StyledNav>
           <NavLink href="/">Home</NavLink>
           <NavLink href="/about">About Us</NavLink>
           <SignInButton onClick={() => signIn("test@test.com", "password")}>
             Sign In
           </SignInButton>
-        </AuthSection>
-      ) : (
+        </StyledNav>
+
+        {/* Mobile Dropdown Menu */}
+        {showMobileMenu && (
+          <MobileDropdownMenu>
+            <NavLink href="/">Home</NavLink>
+            <NavLink href="/about">About Us</NavLink>
+            <NavLink href="#" onClick={() => signIn("test@test.com", "password")}>
+              Sign In
+            </NavLink>
+          </MobileDropdownMenu>
+        )}
+      </LogoSection>
+
+      {/* Auth Section for when the user is logged in */}
+      {user ? (
         <UserSection>
           <UserInfo>
             Welcome, {user.email}
@@ -55,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({ user, skillPoints, signIn, signOut }) =
           </UserInfo>
           <SignOutButton onClick={signOut}>Sign Out</SignOutButton>
         </UserSection>
-      )}
+      ) : null}
     </StyledHeader>
   );
 };
@@ -77,8 +85,9 @@ const StyledHeader = styled.header`
 
 const LogoSection = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 40px;
+  width: 100%;
 `;
 
 const StyledLogo = styled.h1`
@@ -94,43 +103,46 @@ const MobileMenuButton = styled.button`
   padding: 10px;
   color: #f0f0f0;
   display: none;
+
   @media (max-width: 640px) {
-    display: block;
+    display: block; /* Show hamburger button on small screens */
   }
 `;
 
-const StyledNav = styled.nav<{ $showMobileMenu: boolean }>`
+const StyledNav = styled.nav`
   display: flex;
   gap: 30px;
+  align-items: center;
   @media (max-width: 640px) {
-    display: ${props => props.$showMobileMenu ? 'flex' : 'none'};
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    background-color: #333;
-    padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
-    border-radius: 0 0 16px 16px;
+    display: none; /* Hide nav links on small screens */
   }
 `;
 
-const NavButton = styled.button`
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  background: #444;
-  color: #f0f0f0;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-`;
-
-const AuthSection = styled.div`
+const MobileDropdownMenu = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 20px;
+  position: absolute;
+  top: 80px; /* Position the dropdown below the header */
+  right: 30px;
+  background-color: #333;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+
+  a {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 10px;
+    border-radius: 8px;
+
+    &:hover {
+      background-color: #444;
+    }
+  }
 `;
 
 const NavLink = styled.a`
@@ -139,8 +151,10 @@ const NavLink = styled.a`
   padding: 10px 20px;
   font-size: 18px;
   font-weight: 500;
-  @media (max-width: 640px) {
-    display: none;
+
+  &:hover {
+    background-color: #444;
+    border-radius: 8px;
   }
 `;
 
@@ -153,8 +167,16 @@ const SignInButton = styled.button`
   cursor: pointer;
   font-size: 18px;
   font-weight: 500;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background-color: #2862bf;
+    box-shadow: 0 6px 8px -2px rgba(59, 130, 246, 0.6), 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+  }
+
   @media (max-width: 640px) {
-    display: none;
+    display: none; /* Hide the button on mobile */
   }
 `;
 
@@ -186,6 +208,7 @@ const SignOutButton = styled.button`
   border-radius: 20px;
   border: none;
   cursor: pointer;
+
   @media (max-width: 640px) {
     display: none;
   }

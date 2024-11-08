@@ -10,20 +10,62 @@ interface Gig {
   skillPoints: number;
   duration: string;
   imageUrl: string;
+  problemOwner: string; // Added the owner of the problem
 }
 
 const AvailableGigs: React.FC = () => {
   const [gigs] = useState<Gig[]>([
     {
       id: '1',
-      title: 'Math Tutoring',
-      category: 'Tutoring',
-      description: 'Expert math tutoring for all levels',
+      title: 'Solve Math Problem for High School',
+      category: 'Math',
+      description: 'A student needs help solving complex calculus problems for an upcoming exam.',
       skillPoints: 200,
-      duration: '2 hours',
+      duration: '2 hours ago',
       imageUrl: 'https://placehold.co/300x200',
+      problemOwner: 'John Doe',
     },
-    // Add more gigs here...
+    {
+      id: '2',
+      title: 'Design Logo for Startup',
+      category: 'Design',
+      description: 'A new startup needs a creative and modern logo to establish its brand identity.',
+      skillPoints: 300,
+      duration: '5 hours ago',
+      imageUrl: 'https://placehold.co/300x200',
+      problemOwner: 'Jane Smith',
+    },
+    {
+      id: '3',
+      title: 'Build a Personal Website',
+      category: 'Development',
+      description: 'A professional needs a responsive and modern website to showcase their portfolio.',
+      skillPoints: 500,
+      duration: '10 hours ago',
+      imageUrl: 'https://placehold.co/300x200',
+      problemOwner: 'Alex Johnson',
+    },
+    {
+      id: '4',
+      title: 'Create a Marketing Strategy for Small Business',
+      category: 'Marketing',
+      description: 'A small business needs an online marketing strategy to boost its sales and visibility.',
+      skillPoints: 150,
+      duration: '4 hours ago',
+      imageUrl: 'https://placehold.co/300x200',
+      problemOwner: 'Emily Davis',
+    },
+    {
+      id: '5',
+      title: 'Photography for Product Launch',
+      category: 'Photography',
+      description: 'A company needs professional photography for an upcoming product launch.',
+      skillPoints: 250,
+      duration: '3 hours ago',
+      imageUrl: 'https://placehold.co/300x200',
+      problemOwner: 'Chris Lee',
+    },
+    // Add more gigs here if needed...
   ]);
 
   const [showAllGigs, setShowAllGigs] = useState(false);
@@ -33,6 +75,11 @@ const AvailableGigs: React.FC = () => {
   };
 
   const displayedGigs = showAllGigs ? gigs : gigs.slice(0, 3);
+
+  const handleApplyClick = (gigId: string) => {
+    alert(`You have applied for gig: ${gigId}`);
+    // Implement actual application logic here (e.g., sending a request to the backend)
+  };
 
   return (
     <GigsSection>
@@ -49,6 +96,12 @@ const AvailableGigs: React.FC = () => {
                 <GigSkillPoints>{gig.skillPoints} SP</GigSkillPoints>
                 <GigDuration>{gig.duration}</GigDuration>
               </GigDetails>
+              <GigOwner>
+                Problem posted by: <strong>{gig.problemOwner}</strong>
+              </GigOwner>
+              <ApplyButton onClick={() => handleApplyClick(gig.id)}>
+                Apply for this gig
+              </ApplyButton>
             </GigContent>
           </GigCard>
         ))}
@@ -63,7 +116,7 @@ const AvailableGigs: React.FC = () => {
 };
 
 const GigsSection = styled.section`
-  background-color: #1f2937;
+  background-color: #1e293b;
   padding: 30px;
   border-radius: 12px;
   margin-bottom: 30px;
@@ -156,6 +209,29 @@ const GigSkillPoints = styled.span`
 const GigDuration = styled.span`
   color: #d1d5db;
   font-size: 14px;
+`;
+
+const GigOwner = styled.div`
+  margin-top: 12px;
+  font-size: 14px;
+  color: #d1d5db;
+`;
+
+const ApplyButton = styled.button`
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: #f9fafb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  margin-top: 12px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #2563eb;
+  }
 `;
 
 const ToggleButtonContainer = styled.div`

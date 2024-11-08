@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Header from './header';
@@ -6,7 +7,7 @@ import PromotionalPanel from './promotionalpanel';
 import SearchSection from './searchsection';
 import AvailableGigs from './availablegigs';
 import ContactAndMapSection from './contactandmapsection';
-import ServiceList from './servicelist';
+import HelpPrompt from './prompt'; // Import the HelpPrompt component
 
 interface User {
   email: string;
@@ -22,11 +23,9 @@ const SkillSharePlatform: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [skillPoints, setSkillPoints] = useState<number>(0);
   const [eventStats, setEventStats] = useState<EventStats>({ activeUsers: 0, totalEvents: 0 });
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(10);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [categories, setCategories] = useState<string[]>(['Category 1', 'Category 2', 'Category 3']);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Categories'); // Ensure selectedCategory is set
 
   const createTask = (task: { title: string; description: string }) => {
     console.log("Creating task:", task);
@@ -44,8 +43,10 @@ const SkillSharePlatform: React.FC = () => {
     setUser(null);
   };
 
-  const addCategory = (newCategory: string) => {
-    setCategories([...categories, newCategory]);
+  // Handler for "Create a Gig" button click
+  const handleCreateGig = () => {
+    console.log("Create a Gig clicked");
+    // You can add additional logic here, like opening a modal or redirecting the user.
   };
 
   return (
@@ -63,23 +64,20 @@ const SkillSharePlatform: React.FC = () => {
             Post New Service
           </StyledButton>
         )}
-        <StyledButton onClick={() => addCategory("New Category")}>
-          Add Category
-        </StyledButton>
         <SearchSection
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
           location={location}
           setLocation={setLocation}
           searchRadius={searchRadius}
           setSearchRadius={setSearchRadius}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          categories={categories}
+          selectedCategory={selectedCategory} // Pass selectedCategory here
+          setSelectedCategory={setSelectedCategory} // Pass setSelectedCategory here
         />
+
+        {/* Use the HelpPrompt Component */}
+        <HelpPrompt onCreateGig={handleCreateGig} />
+
         <AvailableGigs />
         <ContactAndMapSection />
-        <ServiceList user={user} />
       </StyledTaskMarketplace>
     </StyledSkillSharePlatform>
   );
