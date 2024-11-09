@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -28,7 +29,7 @@ export const SignupPage: React.FC = () => {
       return response.data;
     } catch (err) {
       console.error('Signup error:', err);
-      throw new Error('Signup failed');
+      throw new Error('Signup   failed');
     }
   };
 
@@ -36,23 +37,36 @@ export const SignupPage: React.FC = () => {
     event.preventDefault();
     setLoading(true);
     setError(null);
-
+  
+    // Simple field validation
     if (!username || !email || !password) {
       setError('Please fill all fields');
       setLoading(false);
       return;
     }
-
+  
+    // Email format validation
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(email)) {
+      setError('Invalid email format');
+      setLoading(false);
+      return;
+    }
+  
     try {
-      await signupApi(username, email, password);
-      toast.success('Signup successful!');
-      router.push('/login');
+      const response = await signupApi(username, email, password);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        toast.success('Signup successful!');
+        router.push('/login');
+      }
     } catch (err) {
       setError('An error occurred during signup.');
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   if (!isMounted) return null;
 

@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 interface User {
   id: number;
   email: string;
+  username: string;
   password_hash: string;
 }
 
@@ -36,7 +37,11 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token on successful login
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { 
+        userId: user.id,
+        email: user.email,      // Include email in the token
+        username: user.username // Include username in the token
+      },
       process.env.JWT_SECRET as string,
       { expiresIn: '2h' } // Token expires in 2 hours
     );
@@ -48,7 +53,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Set the cookie with the JWT token manually
-    response.headers.set('Set-Cookie', `token=${token}; HttpOnly; Secure=${process.env.NODE_ENV === 'production'}; Max-Age=${2 * 60 * 60}; Path=/`);
+    response.headers.set('Set-Cookie', `token=${token}; HttpOnly; Secure=${process.env.NODE_ENV === 'production' ? 'true' : 'false'}; Max-Age=${2 * 60 * 60}; Path=/`);
 
     return response;
 

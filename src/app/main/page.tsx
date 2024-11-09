@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import Header from './header';
 import PromotionalPanel from './promotionalpanel';
@@ -8,10 +8,12 @@ import SearchSection from './searchsection';
 import AvailableGigs from './availablegigs';
 import ContactAndMapSection from './contactandmapsection';
 import HelpPrompt from './prompt'; // Import the HelpPrompt component
+import { useRouter } from 'next/navigation';
 
 interface User {
   email: string;
   id: string;
+  profilePicture?: string; // Optional profile picture URL
 }
 
 interface EventStats {
@@ -21,32 +23,64 @@ interface EventStats {
 
 const SkillSharePlatform: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [skillPoints, setSkillPoints] = useState<number>(0);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [eventStats, setEventStats] = useState<EventStats>({ activeUsers: 0, totalEvents: 0 });
   const [location, setLocation] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(10);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Categories'); // Ensure selectedCategory is set
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
+  const router = useRouter();
 
-  const createTask = (task: { title: string; description: string }) => {
-    console.log("Creating task:", task);
-    setSkillPoints(skillPoints + 10); // Increase skill points
-  };
+  // Memoize the checkAuth function to avoid unnecessary re-renders
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await fetch('/api/protected', {
+        method: 'GET',
+        credentials: 'include', // Include cookies for authentication
+      });
 
-  const signIn = (email: string, password: string) => {
-    console.log("Signing in with email:", email, "and password:", password);
-    setUser({ email, id: "user-id" });
-    setEventStats({ activeUsers: eventStats.activeUsers + 1, totalEvents: eventStats.totalEvents });
+      const text = await response.text();
+      const data = JSON.parse(text);  // Manually parse the response
+
+      if (response.ok && data.success) {
+        setUser({ email: data.email, id: data.userId, profilePicture: data.profilePicture });
+        setIsLoggedIn(true);
+        updateEventStats(true);  // Update event stats when user is logged in
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+        alert(data.message); // Show the error message if not logged in
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert('Error checking authentication: ' + error.message);
+      } else {
+        alert('Unknown error: ' + String(error));
+      }
+      setIsLoggedIn(false);
+    }
+  }, []); 
+
+  useEffect(() => {
+    checkAuth();  // Check authentication when the component mounts
+  }, [checkAuth]);  
+
+  const updateEventStats = (isLoggedIn: boolean) => {
+    setEventStats(prevStats => ({
+      activeUsers: isLoggedIn ? prevStats.activeUsers + 1 : prevStats.activeUsers - 1,
+      totalEvents: prevStats.totalEvents,
+    }));
   };
 
   const signOut = () => {
-    console.log("Signing out");
     setUser(null);
+    setIsLoggedIn(false);
+    document.cookie = "token=; max-age=0; path=/"; // Clear the token cookie
+    updateEventStats(false);  // Update event stats when logging out
+    router.push('/main'); // Redirect to /main after logout
   };
 
-  // Handler for "Create a Gig" button click
-  const handleCreateGig = () => {
-    console.log("Create a Gig clicked");
-    // You can add additional logic here, like opening a modal or redirecting the user.
+  const signIn = () => {
+    router.push('/login'); // Redirect to login page when Sign In button is clicked
   };
 
   return (
@@ -54,29 +88,34 @@ const SkillSharePlatform: React.FC = () => {
       <StyledTaskMarketplace>
         <Header
           user={user}
-          skillPoints={skillPoints}
-          signIn={signIn}
           signOut={signOut}
+          signIn={signIn}
+          eventStats={eventStats}
         />
-        <PromotionalPanel eventStats={eventStats} />
-        {user && (
-          <StyledButton onClick={() => createTask({ title: "New Task", description: "Description" })}>
+        
+        {!isLoggedIn && <PromotionalPanel eventStats={eventStats} />}
+        
+        {isLoggedIn && (
+          <StyledButton onClick={() => console.log("Post New Service")}>
             Post New Service
           </StyledButton>
         )}
-        <SearchSection
-          location={location}
-          setLocation={setLocation}
-          searchRadius={searchRadius}
-          setSearchRadius={setSearchRadius}
-          selectedCategory={selectedCategory} // Pass selectedCategory here
-          setSelectedCategory={setSelectedCategory} // Pass setSelectedCategory here
-        />
 
-        {/* Use the HelpPrompt Component */}
-        <HelpPrompt onCreateGig={handleCreateGig} />
-
-        <AvailableGigs />
+        {isLoggedIn && (
+          <SearchSection
+            location={location}
+            setLocation={setLocation}
+            searchRadius={searchRadius}
+            setSearchRadius={setSearchRadius}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+        )}
+        
+        {isLoggedIn && <AvailableGigs />}
+        
+        {!isLoggedIn && <HelpPrompt onCreateGig={signIn} />}
+        
         <ContactAndMapSection />
       </StyledTaskMarketplace>
     </StyledSkillSharePlatform>

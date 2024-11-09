@@ -1,27 +1,45 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import bcryptjs from 'bcryptjs';
-import emailjs from 'emailjs-com';
 import jwt from 'jsonwebtoken';
 import { connection } from '@/dbConfig/dbConfig';
-import fetch from 'node-fetch';
+import brevo from '@getbrevo/brevo';
+
+const apiInstance = new brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY as string);
+const fromEmail = process.env.BREVO_FROM_EMAIL;
+const baseUrl = process.env.BASE_URL;
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!process.env.BREVO_API_KEY || !fromEmail || !baseUrl || !jwtSecret) {
+  throw new Error('One or more environment variables are not defined');
+}
 
 const sendVerificationEmail = async (to: string, token: string): Promise<void> => {
   const verificationUrl = `${process.env.BASE_URL}/api/verify-email?token=${token}`;
-  const templateParams = {
-    to_email: to,
-    verification_url: verificationUrl,
-  };
+
+  const sendSmtpEmail = new brevo.SendSmtpEmail();
+  sendSmtpEmail.subject = "Verify your email address";
+  sendSmtpEmail.htmlContent = `
+    <html>
+      <body>
+        <h1>Welcome to Our App!</h1>
+        <p>Click the link below to verify your email:</p>
+        <a href="${verificationUrl}">Verify Email</a>
+      </body>
+    </html>
+  `;
+  sendSmtpEmail.sender = { "name": "YourApp", "email": process.env.BREVO_FROM_EMAIL };
+  sendSmtpEmail.to = [{ "email": to }];
+  if (!process.env.BREVO_FROM_EMAIL) {
+    throw new Error('BREVO_FROM_EMAIL environment variable is not defined');
+  }
+  sendSmtpEmail.replyTo = { "email": process.env.BREVO_FROM_EMAIL, "name": "YourApp Support" };
 
   try {
-    console.log('Attempting to send verification email to:', to);
-    await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID as string,
-      process.env.EMAILJS_TEMPLATE_ID as string,
-      templateParams,
-      process.env.EMAILJS_PUBLIC_KEY as string
-    );
-    console.log('Verification email sent successfully to:', to);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('Verification email sent successfully');
   } catch (error) {
     console.error('Error sending email:', error);
     throw new Error(`Failed to send verification email: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -31,7 +49,7 @@ const sendVerificationEmail = async (to: string, token: string): Promise<void> =
 export async function POST(request: NextRequest) {
   try {
     console.log('Received request:', request);
-    
+
     // Parse the request body
     const reqBody = await request.json();
     const { username, email, password } = reqBody;
@@ -69,6 +87,14 @@ export async function POST(request: NextRequest) {
 
     const userId = (result as any).insertId;
     console.log('User created with ID:', userId);
+
+    // Insert a new profile for the user
+    console.log('Inserting new profile for user ID:', userId);
+    await connection.promise().query(
+      'INSERT INTO Profiles (user_id) VALUES (?)',
+      [userId]
+    );
+    console.log('Profile created successfully for user ID:', userId);
 
     // Generate JWT for email verification
     console.log('Generating JWT for email verification for user ID:', userId);

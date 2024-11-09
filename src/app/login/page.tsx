@@ -25,6 +25,7 @@ export const LoginForm: React.FC = () => {
   const loginApi = async (email: string, password: string) => {
     try {
       const response = await axios.post('/api/users/login', { email, password });
+
       return response.data; // Assuming response contains user info or token
     } catch (err) {
       console.error('Login error:', err);
