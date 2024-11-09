@@ -8,7 +8,7 @@ interface Profile {
   phone: string;
   address: string;
   bio: string;
-  profile_image_url: string;
+  profile_image_url: string | null;
 }
 
 const ProfilePage = () => {
@@ -21,7 +21,7 @@ const ProfilePage = () => {
     bio: '',
     profileImageUrl: '',
   });
-  const [userId, setUserId] = useState(3);  // Assuming the user ID is 3 for testing
+  const [userId, setUserId] = useState(3); // Assuming the user ID is 3 for testing
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,12 +39,12 @@ const ProfilePage = () => {
       if (data.profile) {
         setProfile(data.profile);
         setFormData({
-          firstName: data.profile.first_name,
-          lastName: data.profile.last_name,
-          phone: data.profile.phone,
-          address: data.profile.address,
-          bio: data.profile.bio,
-          profileImageUrl: data.profile.profile_image_url,
+          firstName: data.profile.first_name || '',
+          lastName: data.profile.last_name || '',
+          phone: data.profile.phone || '',
+          address: data.profile.address || '',
+          bio: data.profile.bio || '',
+          profileImageUrl: data.profile.profile_image_url || '',
         });
       } else {
         setError('Profile not found.');
@@ -135,11 +135,16 @@ const ProfilePage = () => {
       {profile ? (
         <div>
           <h2>Profile Information</h2>
-          <img src={profile.profile_image_url} alt="Profile" width="100" />
-          <p>Name: {profile.first_name} {profile.last_name}</p>
-          <p>Phone: {profile.phone}</p>
-          <p>Address: {profile.address}</p>
-          <p>Bio: {profile.bio}</p>
+          {/* Handle the profile image URL gracefully */}
+          {profile.profile_image_url ? (
+            <img src={profile.profile_image_url} alt="Profile" width="100" />
+          ) : (
+            <img src="/images/default-profile.png" alt="Default Profile" width="100" />
+          )}
+          <p>Name: {profile.first_name || 'No First Name'} {profile.last_name || 'No Last Name'}</p>
+          <p>Phone: {profile.phone || 'No Phone'}</p>
+          <p>Address: {profile.address || 'No Address'}</p>
+          <p>Bio: {profile.bio || 'No Bio available'}</p>
 
           <h3>Update Profile</h3>
           <form onSubmit={handleUpdate}>
