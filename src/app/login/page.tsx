@@ -15,17 +15,26 @@ export const LoginForm: React.FC = () => {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
     // Set `isMounted` to true only after the client-side rendering has occurred
     setIsMounted(true);
+
+    // Check if email and password are saved in localStorage
+    const storedEmail = localStorage.getItem('email');
+    const storedPassword = localStorage.getItem('password');
+    if (storedEmail && storedPassword) {
+      setEmail(storedEmail);
+      setPassword(storedPassword);
+      setRememberMe(true); // Automatically check the "Remember me" box
+    }
   }, []);
 
   const loginApi = async (email: string, password: string) => {
     try {
       const response = await axios.post('/api/users/login', { email, password });
-
       return response.data; // Assuming response contains user info or token
     } catch (err) {
       console.error('Login error:', err);
@@ -49,6 +58,15 @@ export const LoginForm: React.FC = () => {
       // Call the login API function
       await loginApi(email, password);
 
+      // After successful login, handle "Remember me" functionality
+      if (rememberMe) {
+        localStorage.setItem('email', email);
+        localStorage.setItem('password', password);
+      } else {
+        localStorage.removeItem('email');
+        localStorage.removeItem('password');
+      }
+
       // After successful login, redirect to the main page
       toast.success('Login successful!');
       router.push('/main'); // Redirect to dashboard
@@ -58,6 +76,11 @@ export const LoginForm: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Navigate to the Sign Up page
+  const handleSignUpRedirect = () => {
+    router.push('/signup');
   };
 
   // Avoid SSR mismatch by only rendering after mounting
@@ -94,7 +117,11 @@ export const LoginForm: React.FC = () => {
           )}
           <RememberMeWrapper>
             <label className="remember-me">
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
               <span>Remember me</span>
             </label>
           </RememberMeWrapper>
@@ -104,6 +131,11 @@ export const LoginForm: React.FC = () => {
           <GoogleLoginWrapper>
             <GoogleLoginButton />
           </GoogleLoginWrapper>
+
+          {/* Sign Up Redirect Button */}
+          <SignUpRedirect type="button" onClick={handleSignUpRedirect}>
+            Don&#39;t have an account? <span>Sign Up</span>
+          </SignUpRedirect>
         </Form>
       </LoginCard>
     </Container>
@@ -212,6 +244,23 @@ const GoogleLoginWrapper = styled.div`
   margin-top: 16px;
   width: 100%;
   justify-content: center;
+`;
+
+const SignUpRedirect = styled.button`
+  background: none;
+  border: none;
+  color: #4caf50;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 16px;
+  span {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  &:hover {
+    color: #388e3c;
+  }
 `;
 
 export default LoginForm;

@@ -7,13 +7,13 @@ import PromotionalPanel from './promotionalpanel';
 import SearchSection from './searchsection';
 import AvailableGigs from './availablegigs';
 import ContactAndMapSection from './contactandmapsection';
-import HelpPrompt from './prompt'; // Import the HelpPrompt component
+import HelpPrompt from './prompt';
 import { useRouter } from 'next/navigation';
 
 interface User {
   email: string;
   id: string;
-  profilePicture?: string; // Optional profile picture URL
+  profilePicture?: string;
 }
 
 interface EventStats {
@@ -30,25 +30,24 @@ const SkillSharePlatform: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const router = useRouter();
 
-  // Memoize the checkAuth function to avoid unnecessary re-renders
   const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/protected', {
         method: 'GET',
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
       });
 
       const text = await response.text();
-      const data = JSON.parse(text);  // Manually parse the response
+      const data = JSON.parse(text);
 
       if (response.ok && data.success) {
         setUser({ email: data.email, id: data.userId, profilePicture: data.profilePicture });
         setIsLoggedIn(true);
-        updateEventStats(true);  // Update event stats when user is logged in
+        updateEventStats(true);
       } else {
         setIsLoggedIn(false);
         setUser(null);
-        alert(data.message); // Show the error message if not logged in
+        alert(data.message);
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -58,11 +57,11 @@ const SkillSharePlatform: React.FC = () => {
       }
       setIsLoggedIn(false);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
-    checkAuth();  // Check authentication when the component mounts
-  }, [checkAuth]);  
+    checkAuth();
+  }, [checkAuth]);
 
   const updateEventStats = (isLoggedIn: boolean) => {
     setEventStats(prevStats => ({
@@ -71,16 +70,28 @@ const SkillSharePlatform: React.FC = () => {
     }));
   };
 
-  const signOut = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    document.cookie = "token=; max-age=0; path=/"; // Clear the token cookie
-    updateEventStats(false);  // Update event stats when logging out
-    router.push('/main'); // Redirect to /main after logout
-  };
+  const signOut = async () => {
+    try {
+      // Clear the cookie with explicit path and domain if necessary
+      document.cookie = "token=; path=/; domain=" + window.location.hostname + "; max-age=0; SameSite=Strict; Secure";
+      
+      // Update state and stats
+      setUser(null);
+      setIsLoggedIn(false);
+      updateEventStats(false);
+  
+      // Optionally, call a logout API endpoint to clear the session
+      await fetch('/api/users/logout', { method: 'POST', credentials: 'include' });
+      
+      // Navigate to main page after sign-out
+      router.push('/main');
+    } catch (error) {
+      console.error('Error during sign-out:', error);
+    }
+  };  
 
   const signIn = () => {
-    router.push('/login'); // Redirect to login page when Sign In button is clicked
+    router.push('/login');
   };
 
   return (
@@ -95,11 +106,8 @@ const SkillSharePlatform: React.FC = () => {
         
         {!isLoggedIn && <PromotionalPanel eventStats={eventStats} />}
         
-        {isLoggedIn && (
-          <StyledButton onClick={() => console.log("Post New Service")}>
-            Post New Service
-          </StyledButton>
-        )}
+        {/* Render HelpPrompt in all cases and pass isLoggedIn prop */}
+        <HelpPrompt onCreateGig={isLoggedIn ? () => router.push('/gigform') : signIn} />
 
         {isLoggedIn && (
           <SearchSection
@@ -113,8 +121,6 @@ const SkillSharePlatform: React.FC = () => {
         )}
         
         {isLoggedIn && <AvailableGigs />}
-        
-        {!isLoggedIn && <HelpPrompt onCreateGig={signIn} />}
         
         <ContactAndMapSection />
       </StyledTaskMarketplace>
@@ -140,18 +146,6 @@ const StyledTaskMarketplace = styled.main`
   transition: all 0.3s ease;
   max-width: 1400px;
   margin: 0 auto;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-  margin-bottom: 20px;
-  font-size: 16px;
-  font-weight: 500;
 `;
 
 export default SkillSharePlatform;

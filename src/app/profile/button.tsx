@@ -1,23 +1,13 @@
-'use client';
-
 import React from "react";
 import styled from "styled-components";
 
-interface ButtonProps {
-  onClick: () => void;
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  onClick?: () => void;
   className?: string;
   children: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({ onClick, className, children }) => {
-  return (
-    <StyledButton onClick={onClick} className={className}>
-      {children}
-    </StyledButton>
-  );
-};
-
-const StyledButton = styled.button`
+const StyledButton = styled.button<ButtonProps>`
   background-color: #4caf50;
   color: white;
   padding: 10px;
@@ -42,5 +32,13 @@ const StyledButton = styled.button`
     }
   }
 `;
+
+const Button: React.FC<ButtonProps> = ({ onClick, className, children, ...rest }) => {
+  return (
+    <StyledButton onClick={onClick} className={className} {...rest}>
+      {children}
+    </StyledButton>
+  );
+};
 
 export default Button;

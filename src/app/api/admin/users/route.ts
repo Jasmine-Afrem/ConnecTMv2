@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { connection } from '@/dbConfig/dbConfig';
-import { ResultSetHeader } from 'mysql2/promise';
+import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 
 // Type definition for the user and profile data
 type UserProfile = {
@@ -20,12 +20,15 @@ type UserProfile = {
 // GET - Fetch all users with profile details
 export async function GET() {
   try {
-    const [users]: [UserProfile[]] = await connection.promise().query(`
+    // Fetch users from the database
+    const [users] = await connection.promise().query<RowDataPacket[] & UserProfile[]>(
+      `
       SELECT u.id, u.username, u.email, u.created_at, p.first_name, p.last_name, p.phone, p.address, p.bio
       FROM Users u
       LEFT JOIN Profiles p ON u.id = p.user_id
     `);
 
+    // Ensure users is an array of UserProfile objects
     return NextResponse.json({ users });
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -39,7 +42,8 @@ export async function POST(request: NextRequest) {
     const { username, email, passwordHash, firstName, lastName, phone, address, bio } = await request.json();
 
     // Check if the username or email already exists
-    const [existingUser] = await connection.promise().query(`
+    const [existingUser] = await connection.promise().query<RowDataPacket[]>(
+      `
       SELECT id FROM Users WHERE username = ? OR email = ?
     `, [username, email]);
 

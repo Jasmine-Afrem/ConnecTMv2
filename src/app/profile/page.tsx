@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import ProfileImageUploader from './profileimageuploader';
 import FormField from './formfield';
 import Button from './button';
+import Image from 'next/image';
 
 interface Profile {
   user_id: number;
@@ -19,6 +20,7 @@ interface Profile {
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -27,20 +29,52 @@ const ProfilePage = () => {
     bio: '',
     profileImageUrl: '',
   });
-  const [userId] = useState(3); // Assuming the user ID is 3 for testing
-  const [loading, setLoading] = useState(true); // Start with loading set to true
+  const [userId, setUserId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchProfile();
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/protected', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          setUserId(data.userId);
+          setLoggedIn(true);
+        } else {
+          setLoggedIn(false);
+          alert(data.message);
+        }
+      } catch (error : unknown) {
+        if(error instanceof Error)
+        {
+          setLoggedIn(false);
+          alert('Error checking authentication:' + error.message);
+        }
+        else
+        {
+          alert('Malakai: Something went wrong');
+        }
+      }
+    };
+
+    checkAuth();
   }, []);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
+    if (!userId) return;
+
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`/api/profile?userId=${userId}`);
       const data = await response.json();
+      
       if (data.profile) {
         setProfile(data.profile);
         setFormData({
@@ -56,17 +90,23 @@ const ProfilePage = () => {
       }
     } catch (err) {
       setError('Failed to fetch profile data.');
-      console.error(err); // Log errors for debugging
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchProfile();
+    }
+  }, [fetchProfile, userId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName) {
@@ -94,6 +134,7 @@ const ProfilePage = () => {
       });
 
       const data = await response.json();
+      
       if (data.success) {
         alert('Profile updated successfully');
         fetchProfile(); // Refresh profile
@@ -117,6 +158,7 @@ const ProfilePage = () => {
       });
 
       const data = await response.json();
+      
       if (data.success) {
         alert('Profile deleted successfully');
         setProfile(null); // Clear the profile
@@ -136,20 +178,23 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Show a loading message until data is available
+    return <div>Loading...</div>;
   }
 
   return (
-    <MainContainer>
+    <>
       <ProfileSettingsContainer>
         <ProfileSettingsTitle>Profile Settings</ProfileSettingsTitle>
         <ProfileFormContainer>
           <ProfileImageWrapper>
             {profile?.profile_image_url && (
-              <img
+              <Image
                 src={profile.profile_image_url}
                 alt="Profile"
                 className="profile-image"
+                width={60}
+                height={60}
+                objectFit="cover"
               />
             )}
           </ProfileImageWrapper>
@@ -207,20 +252,11 @@ const ProfilePage = () => {
           </Form>
         </ProfileFormContainer>
       </ProfileSettingsContainer>
-    </MainContainer>
+    </>
   );
 };
 
-const MainContainer = styled.main`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-  padding: 20px;
-  background-color: #0f172a;
-`;
-
+// Styled components
 const ProfileSettingsContainer = styled.section`
   max-width: 90%;
   margin: 20px auto;

@@ -1,50 +1,42 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { connection } from '@/dbConfig/dbConfig';
-import brevo from '@getbrevo/brevo';
+import { Resend } from 'resend';
 
-const apiInstance = new brevo.TransactionalEmailsApi();
-apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY as string);
-const fromEmail = process.env.BREVO_FROM_EMAIL;
-const baseUrl = process.env.BASE_URL;
+// Hardcode the API key (temporarily)
+const resend = new Resend('re_Cv9aTEGm_AyKP2ByrAFERsvGBAQv5ZHoa');
 const jwtSecret = process.env.JWT_SECRET;
 
-if (!process.env.BREVO_API_KEY || !fromEmail || !baseUrl || !jwtSecret) {
-  throw new Error('One or more environment variables are not defined');
+interface User {
+  username: string;
+  email: string;
+  password_hash: string;
 }
 
-const sendVerificationEmail = async (to: string, token: string): Promise<void> => {
-  const verificationUrl = `${process.env.BASE_URL}/api/verify-email?token=${token}`;
+interface Profile {
+  user_id: number;
+}
 
-  const sendSmtpEmail = new brevo.SendSmtpEmail();
-  sendSmtpEmail.subject = "Verify your email address";
-  sendSmtpEmail.htmlContent = `
-    <html>
-      <body>
-        <h1>Welcome to Our App!</h1>
-        <p>Click the link below to verify your email:</p>
-        <a href="${verificationUrl}">Verify Email</a>
-      </body>
-    </html>
-  `;
-  sendSmtpEmail.sender = { "name": "YourApp", "email": process.env.BREVO_FROM_EMAIL };
-  sendSmtpEmail.to = [{ "email": to }];
-  if (!process.env.BREVO_FROM_EMAIL) {
-    throw new Error('BREVO_FROM_EMAIL environment variable is not defined');
-  }
-  sendSmtpEmail.replyTo = { "email": process.env.BREVO_FROM_EMAIL, "name": "YourApp Support" };
+async function sendVerificationEmail(email: string, token: string) {
+  const verificationLink = `http://localhost:3000/verify?token=${token}`;
 
   try {
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Verification email sent successfully');
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: 'ctgmarius@gmail.com',
+      subject: 'Verify Your Email!',
+      html: `<p>Welcome to n0exp!</p>
+        <p>Please confirm your email address by clicking the link below:</p>
+        <a href="${verificationLink}">Verify Email</a>
+        <p>This link will expire in 1 hour.</p>`
+    });
+    console.log(`Verification email sent to ${email}`);
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error(`Failed to send verification email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Failed to send verification email:', error);
+    throw new Error('Failed to send verification email');
   }
-};
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,30 +77,43 @@ export async function POST(request: NextRequest) {
       [username, email, hashedPassword]
     );
 
-    const userId = (result as any).insertId;
+    const userId = (result as unknown as { insertId: number }).insertId;
     console.log('User created with ID:', userId);
+
+    // Create a new Profile object
+    const profile: Profile = { user_id: userId };
 
     // Insert a new profile for the user
     console.log('Inserting new profile for user ID:', userId);
     await connection.promise().query(
-      'INSERT INTO Profiles (user_id) VALUES (?)',
-      [userId]
+      'INSERT INTO Profiles SET ?',
+      { ...profile }
     );
     console.log('Profile created successfully for user ID:', userId);
 
     // Generate JWT for email verification
     console.log('Generating JWT for email verification for user ID:', userId);
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    const token = jwt.sign({ userId }, jwtSecret as string, { expiresIn: '1h' });
     console.log('JWT generated successfully');
 
     // Send the email with the verification token
     console.log('Sending verification email to:', email);
     await sendVerificationEmail(email, token);
 
+    // Create a User object based on the inserted data
+    const newUser: User = {
+      username: username,
+      email: email,
+      password_hash: hashedPassword
+    };
+
+    console.log('New User object created:', newUser);
+
     console.log('User created and verification email sent successfully');
     return NextResponse.json({
       message: 'User created successfully. Please verify your email.',
       success: true,
+      newUser: newUser
     });
   } catch (error: unknown) {
     console.error('Error:', error);

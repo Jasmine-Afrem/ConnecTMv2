@@ -34,6 +34,10 @@ const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) =>
     router.push('/profile');
   };
 
+  const goToFunds = () => {
+    router.push('/funds');
+  };
+
   const logout = () => {
     signOut();
     setShowProfileMenu(false);
@@ -46,12 +50,10 @@ const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) =>
       </LogoSection>
 
       <UserSection>
-        {/* Show Sign In button if user is not logged in */}
         {!user ? (
           <SignInButton onClick={signIn}>Sign In</SignInButton>
         ) : (
           <>
-            {/* Profile Button if user is logged in */}
             <ProfileButton onClick={toggleProfileMenu}>
               <ProfileImage
                 src={user.profilePicture || 'https://via.placeholder.com/40'}
@@ -64,6 +66,7 @@ const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) =>
                 <MenuItem>{user.email}</MenuItem>
                 <MenuItem>Skill Points: {eventStats.activeUsers}</MenuItem>
                 <MenuItem onClick={goToProfile}>View Profile</MenuItem>
+                <MenuItem onClick={goToFunds}>View Funds</MenuItem> {/* New View Funds button */}
                 <MenuItem onClick={logout}>Log Out</MenuItem>
               </ProfileMenu>
             )}

@@ -18,19 +18,19 @@ const HelpPrompt: React.FC<HelpPromptProps> = ({ onCreateGig }) => {
 
 const StyledHelpSection = styled.div`
   display: flex;
-  flex-wrap: wrap; /* Allows elements to wrap on smaller screens */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 30px;
   background-color: #1e293b; 
   padding: 20px;
   border-radius: 8px;
-  width: 100%; /* Ensure full width */
+  width: 100%;
   
   @media (max-width: 768px) {
-    flex-direction: column; /* Stack elements vertically on medium and small screens */
-    text-align: center; /* Center align text and button on smaller screens */
-    padding: 15px; /* Reduced padding for smaller screens */
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
   }
 `;
 
@@ -39,46 +39,46 @@ const StyledHelpText = styled.p`
   font-weight: 600;
   margin: 0;
   color: #f9fafb;
-  flex-grow: 1; /* Allow the text to take available space */
-  text-align: left; /* Align the text to the left */
-  line-height: 1.4; /* Make text more readable */
+  flex-grow: 1;
+  text-align: left;
+  line-height: 1.4;
   
   @media (max-width: 768px) {
-    font-size: 20px; /* Reduce font size for medium screens */
-    text-align: center; /* Center the text on smaller screens */
-    margin-bottom: 10px; /* Reduce margin between text and button */
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 10px;
   }
 
   @media (max-width: 480px) {
-    font-size: 18px; /* Further reduce font size for small screens */
+    font-size: 18px;
   }
 `;
 
 const StyledButton = styled.button`
   padding: 12px 25px;
-  background-color: #0066cc; /* Matches SignInButton */
-  color: #f0f0f0; /* Matches SignInButton */
+  background-color: #0066cc;
+  color: #f0f0f0;
   border-radius: 20px;
   border: none;
   cursor: pointer;
-  font-size: 18px; /* Matches SignInButton */
+  font-size: 18px;
   font-weight: 500;
-  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  transition: all 0.3s ease;
   
   &:not(:disabled):hover {
-    transform: translateY(-2px); /* Lift the button on hover */
-    background-color: #2862bf; /* Change background color on hover */
-    box-shadow: 0 6px 8px -2px rgba(59, 130, 246, 0.6), 0 4px 6px -1px rgba(59, 130, 246, 0.1); /* Add shadow on hover */
+    transform: translateY(-2px);
+    background-color: #2862bf;
+    box-shadow: 0 6px 8px -2px rgba(59, 130, 246, 0.6), 0 4px 6px -1px rgba(59, 130, 246, 0.1);
   }
 
   @media (max-width: 768px) {
-    font-size: 16px; /* Reduce font size on smaller screens */
-    padding: 10px 20px; /* Reduce padding for smaller screens */
+    font-size: 16px;
+    padding: 10px 20px;
   }
 
   @media (max-width: 480px) {
-    font-size: 14px; /* Further reduce font size on very small screens */
-    padding: 8px 15px; /* Further reduce padding on very small screens */
+    font-size: 14px;
+    padding: 8px 15px;
   }
 `;
 

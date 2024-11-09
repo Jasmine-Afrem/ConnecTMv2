@@ -1,7 +1,6 @@
-'use client';
-
-import React, { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import styled from "styled-components";
+import Image from "next/image"; // Import Image component from Next.js
 
 const ProfileImageUploader: React.FC = () => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
@@ -15,9 +14,13 @@ const ProfileImageUploader: React.FC = () => {
   return (
     <UploaderContainer>
       <ImagePreview>
-        <img
+        {/* Use Next.js Image component for better performance */}
+        <Image
           src={profileImage ? URL.createObjectURL(profileImage) : "https://placehold.co/120x120"}
           alt="Profile"
+          width={160} // Set width
+          height={160} // Set height
+          style={{ objectFit: "cover" }} // Maintain the object-fit styling
         />
       </ImagePreview>
       <FileUploadForm className="file-upload-form">
@@ -58,13 +61,6 @@ const ImagePreview = styled.div`
   background-color: #eee;
   overflow: hidden;
   margin-bottom: 10px;
-
-  img {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-  }
 `;
 
 const FileUploadForm = styled.form`
