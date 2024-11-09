@@ -1,5 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
+
 import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import ProfileImageUploader from './profileimageuploader';
+import FormField from './formfield';
+import Button from './button';
 
 interface Profile {
   user_id: number;
@@ -21,15 +27,14 @@ const ProfilePage = () => {
     bio: '',
     profileImageUrl: '',
   });
-  const [userId, setUserId] = useState(3); // Assuming the user ID is 3 for testing
-  const [loading, setLoading] = useState(false);
+  const [userId] = useState(3); // Assuming the user ID is 3 for testing
+  const [loading, setLoading] = useState(true); // Start with loading set to true
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
-  // Fetch profile
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
@@ -51,18 +56,17 @@ const ProfilePage = () => {
       }
     } catch (err) {
       setError('Failed to fetch profile data.');
+      console.error(err); // Log errors for debugging
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle form data change
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle update
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName) {
@@ -98,12 +102,12 @@ const ProfilePage = () => {
       }
     } catch (err) {
       setError('Error updating profile.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle delete
   const handleDelete = async () => {
     setLoading(true);
     setError(null);
@@ -121,85 +125,202 @@ const ProfilePage = () => {
       }
     } catch (err) {
       setError('Error deleting profile.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div>
-      <h1>User Profile</h1>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      
-      {profile ? (
-        <div>
-          <h2>Profile Information</h2>
-          {/* Handle the profile image URL gracefully */}
-          {profile.profile_image_url ? (
-            <img src={profile.profile_image_url} alt="Profile" width="100" />
-          ) : (
-            <img src="/images/default-profile.png" alt="Default Profile" width="100" />
-          )}
-          <p>Name: {profile.first_name || 'No First Name'} {profile.last_name || 'No Last Name'}</p>
-          <p>Phone: {profile.phone || 'No Phone'}</p>
-          <p>Address: {profile.address || 'No Address'}</p>
-          <p>Bio: {profile.bio || 'No Bio available'}</p>
+  const handleLogout = () => {
+    // Implement logout functionality
+  };
 
-          <h3>Update Profile</h3>
-          <form onSubmit={handleUpdate}>
-            <input
+  if (loading) {
+    return <div>Loading...</div>; // Show a loading message until data is available
+  }
+
+  return (
+    <MainContainer>
+      <ProfileSettingsContainer>
+        <ProfileSettingsTitle>Profile Settings</ProfileSettingsTitle>
+        <ProfileFormContainer>
+          <ProfileImageWrapper>
+            {profile?.profile_image_url && (
+              <img
+                src={profile.profile_image_url}
+                alt="Profile"
+                className="profile-image"
+              />
+            )}
+          </ProfileImageWrapper>
+          <ProfileImageUploader />
+
+          <Form className="settings-form" onSubmit={handleUpdate}>
+            <FormField
+              label="First Name"
               type="text"
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
               placeholder="First Name"
             />
-            <input
+            <FormField
+              label="Last Name"
               type="text"
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
               placeholder="Last Name"
             />
-            <input
-              type="text"
+            <FormField
+              label="Phone"
+              type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
               placeholder="Phone"
             />
-            <input
-              type="text"
+            <FormField
+              label="Address"
+              type="textarea"
               name="address"
               value={formData.address}
               onChange={handleChange}
               placeholder="Address"
             />
-            <input
-              type="text"
+            <FormField
+              label="Bio"
+              type="textarea"
               name="bio"
               value={formData.bio}
               onChange={handleChange}
-              placeholder="Bio"
+              placeholder="Tell us about yourself"
             />
-            <input
-              type="text"
-              name="profileImageUrl"
-              value={formData.profileImageUrl}
-              onChange={handleChange}
-              placeholder="Profile Image URL"
-            />
-            <button type="submit">Update Profile</button>
-          </form>
-
-          <button onClick={handleDelete} style={{ marginTop: '10px' }}>Delete Profile</button>
-        </div>
-      ) : (
-        <p>Profile not found.</p>
-      )}
-    </div>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            <ButtonWrapper>
+              <StyledButton type="submit">Save Changes</StyledButton>
+            </ButtonWrapper>
+            <ActionButtons>
+              <StyledActionButton onClick={handleLogout} className="logout-button">Log Out</StyledActionButton>
+              <StyledActionButton onClick={handleDelete} className="delete-button">Delete Account</StyledActionButton>
+            </ActionButtons>
+          </Form>
+        </ProfileFormContainer>
+      </ProfileSettingsContainer>
+    </MainContainer>
   );
 };
+
+const MainContainer = styled.main`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  background-color: #0f172a;
+`;
+
+const ProfileSettingsContainer = styled.section`
+  max-width: 90%;
+  margin: 20px auto;
+  padding: 30px;
+  background-color: #1e293b;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1200px;
+  color: white;
+  text-align: left;
+
+  @media (max-width: 640px) {
+    padding: 15px;
+    width: 100%;
+    margin: 20px;
+  }
+`;
+
+const ProfileSettingsTitle = styled.h1`
+  font-size: 16px;
+  font-weight: 1000;
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-align: left;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fafcff, #c9ccd1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const ProfileFormContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  flex-grow: 1;
+  padding: 0 10px;
+`;
+
+const ProfileImageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .profile-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 800px;
+  flex-grow: 1;
+`;
+
+const ErrorMessage = styled.div`
+  color: #ef4444;
+  font-size: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 20px;
+  justify-content: center;
+`;
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+`;
+
+const StyledButton = styled(Button)`
+  width: 130px;
+  border-radius: 20px;
+`;
+
+const StyledActionButton = styled(Button)`
+  flex: 1;
+  width: 100px;
+  border-radius: 20px;
+`;
 
 export default ProfilePage;

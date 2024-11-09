@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { InputField } from './inputfield';
 import { Button } from './button';
@@ -10,18 +10,21 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
 export const LoginForm: React.FC = () => {
+  const [isMounted, setIsMounted] = useState(false); // Track if component is mounted
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const router = useRouter(); // Initialize router for redirection
+  const router = useRouter();
+
+  useEffect(() => {
+    // Set `isMounted` to true only after the client-side rendering has occurred
+    setIsMounted(true);
+  }, []);
 
   const loginApi = async (email: string, password: string) => {
     try {
-      const response = await axios.post('api/users/login', {
-        email,
-        password,
-      });
+      const response = await axios.post('/api/users/login', { email, password });
       return response.data; // Assuming response contains user info or token
     } catch (err) {
       console.error('Login error:', err);
@@ -42,7 +45,7 @@ export const LoginForm: React.FC = () => {
     }
 
     try {
-      // Call the loginApi function
+      // Call the login API function
       await loginApi(email, password);
 
       // After successful login, redirect to the main page
@@ -55,6 +58,9 @@ export const LoginForm: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Avoid SSR mismatch by only rendering after mounting
+  if (!isMounted) return null;
 
   return (
     <Container>
@@ -103,6 +109,7 @@ export const LoginForm: React.FC = () => {
   );
 };
 
+// Styled components remain the same
 const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -125,7 +132,7 @@ const LoginCard = styled.main`
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-height: 90%; /* Set max height to avoid overflow */
+  max-height: 90%;
   overflow: auto;
 
   .login-title {
@@ -139,11 +146,9 @@ const LoginCard = styled.main`
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-size: unset;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  /* Responsive for medium-sized screens */
   @media (max-width: 768px) {
     width: 80%;
     padding: 30px;
@@ -152,7 +157,6 @@ const LoginCard = styled.main`
     }
   }
 
-  /* Responsive for small screens */
   @media (max-width: 480px) {
     width: 90%;
     padding: 20px;
@@ -167,9 +171,6 @@ const Form = styled.form`
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  background-color: transparent;
-  padding: 0;
-  border-radius: 10px;
 `;
 
 const ErrorMessage = styled.div`
