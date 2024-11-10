@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { CoinPackageCard } from '@/app/funds/coinpackagecard';
-import { Button } from '@/app/funds/button'; // Ensure the correct import path
-import Header from '@/app/main/header'; // Ensure the correct import path
+import { Button } from '@/app/funds/button';
+import Header from '@/app/main/header';
 import { useRouter } from 'next/navigation';
 import Loading from '@/app/loading/loading'; // Import Loading component
 
 interface User {
   email: string;
   profilePicture?: string;
+  id: number;
 }
 
 interface FundsManagementModalProps {
@@ -31,20 +31,30 @@ export const FundsManagementModal: React.FC<FundsManagementModalProps> = ({
   const [loading, setLoading] = useState(true); // Add loading state
   const router = useRouter();
 
-  // Check if user is logged in using JWT
+  // Function to convert coins to dollars
+  const convertCoinsToDollars = (coins: number) => {
+    const ratio = 26.725; // Average ratio
+    return coins / ratio;
+  };
+
+  // Check if user is logged in
   const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/protected', {
         method: 'GET',
-        credentials: 'include', // Sends cookies with request (e.g. JWT token)
+        credentials: 'include',
       });
 
       const text = await response.text();
-      const data = JSON.parse(text);
+      console.log('Raw response:', text);  // Log the raw response
+
+      const data = JSON.parse(text);  // Manually parse the response text
+      console.log('Auth check response:', data);
 
       if (response.ok && data.success) {
-        setUser({ email: data.email, profilePicture: data.profilePicture });
+        setUser({ email: data.email, profilePicture: data.profilePicture, id: data.userId });
         setIsLoggedIn(true);
+        await fetchUserCoins(data.userId); // Fetch user coins after authentication
       } else {
         setIsLoggedIn(false);
         setUser(null);
@@ -62,13 +72,36 @@ export const FundsManagementModal: React.FC<FundsManagementModalProps> = ({
     }
   }, []);
 
+  // Fetch user coins
+  const fetchUserCoins = async (userId: number) => {
+    try {
+      const response = await fetch(`/api/funds?userId=${userId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const coins = data.points;
+        const balance = convertCoinsToDollars(coins);
+        setCoins(coins);
+        setBalance(balance);
+      } else {
+        alert('Failed to fetch user coins: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching user coins:', error);
+      alert('Error fetching user coins');
+    }
+  };
+
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, []);
 
   const signOut = async () => {
     try {
-      document.cookie = "token=; path=/; domain=" + window.location.hostname + "; max-age=0; SameSite=Strict; Secure";
       setUser(null);
       setIsLoggedIn(false);
       await fetch('/api/users/logout', { method: 'POST', credentials: 'include' });
@@ -88,38 +121,68 @@ export const FundsManagementModal: React.FC<FundsManagementModalProps> = ({
         alert('You need to log in to purchase coins');
         return;
       }
-  
-      // Send request to API to update user's coin balance
-      const response = await fetch('/api/purchaseCoins', {
+
+      console.log('User ID:', user.id);
+      console.log('Amount:', amount);
+
+      const response = await fetch(`/api/funds?userId=${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: user?.email, // Ensure this is the logged-in user's email
-          coins: amount,
+          userId: user.id,
+          amount: amount,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        // Update coins and balance after purchase
-        setCoins(prevCoins => prevCoins + amount);
-        setBalance(prevBalance => prevBalance - amount); // Assuming you want to subtract from balance too
+        await fetchUserCoins(user.id);
         alert(`Successfully purchased ${amount} coins!`);
       } else {
-        alert('Failed to purchase coins: ' + data.message);
+        alert('Failed to purchase coins: ' + data.error);
       }
     } catch (error) {
       console.error('Error purchasing coins:', error);
       alert('Error purchasing coins');
     }
   };
-  
 
-  const handleWithdrawFunds = (amount: number) => {
-    // Implementation for withdrawing funds
+  const handleWithdrawFunds = async (amount: number) => {
+    try {
+      if (!isLoggedIn) {
+        alert('You need to log in to withdraw funds');
+        return;
+      }
+
+      console.log('User ID:', user.id);
+      console.log('Amount:', amount);
+
+      const response = await fetch(`/api/funds?userId=${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          amount: amount,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        await fetchUserCoins(user.id);
+        alert(`Successfully withdrew ${amount} coins!`);
+      } else {
+        alert('Failed to withdraw funds: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error withdrawing funds:', error);
+      alert('Error withdrawing funds');
+    }
   };
 
   const coinPackages = [
@@ -130,12 +193,11 @@ export const FundsManagementModal: React.FC<FundsManagementModalProps> = ({
   ];
 
   if (loading) {
-    return <Loading />; // Show the loading screen while waiting for auth
+    return <Loading loading={loading} />; // Show the loading screen while waiting for auth
   }
 
   return (
     <StyledFundsManagementModal>
-      {/* Rendering the Header Component */}
       <Header 
         user={user}
         signIn={signIn} 
@@ -143,7 +205,6 @@ export const FundsManagementModal: React.FC<FundsManagementModalProps> = ({
         eventStats={{ activeUsers: skillPoints, totalEvents: 0 }} 
       />
 
-      {/* Modal Section */}
       <ModalOverlay>
         <ModalContent>
           <header>
@@ -153,7 +214,7 @@ export const FundsManagementModal: React.FC<FundsManagementModalProps> = ({
             <BalanceSection>
               <CurrentBalance>
                 <span>$</span>
-                <span>{balance.toFixed(2)}</span>
+                <span>{balance ? balance.toFixed(2) : '0.00'}</span>
               </CurrentBalance>
               <BalanceLabel>Current Balance</BalanceLabel>
             </BalanceSection>
@@ -332,6 +393,5 @@ const PackageGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 `;
-
 
 export default FundsManagementModal;

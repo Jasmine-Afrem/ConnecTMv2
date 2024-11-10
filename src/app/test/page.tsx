@@ -17,6 +17,7 @@ export default function TestPage() {
         // Log the response status and body before trying to parse as JSON
         const text = await response.text();
         console.log('Raw response:', text);  // Log the raw response
+        
 
         // Now attempt to parse the response as JSON
         const data = JSON.parse(text);  // Manually parse the response text

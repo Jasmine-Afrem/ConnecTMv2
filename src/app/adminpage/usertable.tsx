@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -97,6 +96,22 @@ export const UserTable: React.FC = () => {
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+      try {
+        const response = await fetch(`/api/admin/users?id=${userId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete user');
+        }
+        setUsers(users.filter(user => user.id !== userId));
+      } catch (error) {
+        alert('Failed to delete user');
+      }
+    }
+  };
+
   return (
     <TableContainer>
       <SearchInput
@@ -114,12 +129,13 @@ export const UserTable: React.FC = () => {
               <th>Email</th>
               <th>Status</th>
               <th>Actions</th>
+              <th>Delete</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5}>Loading...</td>
+                <td colSpan={6}>Loading...</td>
               </tr>
             ) : (
               users.map(user => (
@@ -144,6 +160,11 @@ export const UserTable: React.FC = () => {
                       View Details
                     </ActionButton>
                   </td>
+                  <td>
+                    <DeleteButton onClick={() => handleDeleteUser(user.id)}>
+                      Delete
+                    </DeleteButton>
+                  </td>
                 </TableRow>
               ))
             )}
@@ -166,18 +187,8 @@ export const UserTable: React.FC = () => {
               <p><strong>Status:</strong> {selectedUser.active ? 'Active' : 'Inactive'}</p>
               <p><strong>Admin Status:</strong> {selectedUser.isAdmin ? 'Admin' : 'User'}</p>
               <div>
-                <label htmlFor="ticketCount">Ticket Count:</label>
-                <input
-                  type="number"
-                  id="ticketCount"
-                  value={selectedUser.ticketCount}
-                  onChange={(e) => handleTicketCountChange(Number(e.target.value))}
-                  min={0}
-                />
-              </div>
-              <div>
                 <label htmlFor="funds">Funds:</label>
-                <input
+                <FundsInput
                   type="number"
                   id="funds"
                   value={selectedUser.funds}
@@ -202,8 +213,10 @@ export const UserTable: React.FC = () => {
   );
 };
 
+// Styled Components
 const TableContainer = styled.div`
   margin-bottom: 40px;
+  border-radius: 18px;
 `;
 
 const SearchInput = styled.input`
@@ -224,12 +237,29 @@ const ErrorText = styled.p`
 `;
 
 const TableWrapper = styled.div`
-  overflow-x: auto;
+  max-height: 400px; /* Adjust the height as needed */
+  overflow-y: auto;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+
+  th, td {
+    text-align: left;
+    padding: 12px 15px;
+  }
+
+  th {
+    background-color: #1e293b;
+    color: white;
+    font-weight: 600;
+  }
+
+  td {
+    background-color: #2d3748;
+    color: white;
+  }
 `;
 
 const TableRow = styled.tr<{ selected: boolean }>`
@@ -254,6 +284,16 @@ const ActionButton = styled.button`
   border: none;
 `;
 
+const DeleteButton = styled.button`
+  background-color: #ad0000;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  border: none;
+`;
+
 const Modal = styled.div`
   position: fixed;
   top: 0;
@@ -273,6 +313,7 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
+  color: black;
 `;
 
 const ModalHeader = styled.div`
@@ -283,11 +324,14 @@ const ModalHeader = styled.div`
 `;
 
 const CloseButton = styled.button`
-  background-color: #ff0000;
+  background-color: #ad0000;
   color: white;
   border: none;
-  padding: 8px;
-  border-radius: 6px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 32px;
   cursor: pointer;
 `;
 
@@ -301,4 +345,10 @@ const ModalActions = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
+`;
+
+const FundsInput = styled.input`  
+  background-color: #dedede;
+  border: solid 1px #dedede;
+  border-radius: 12px;
 `;

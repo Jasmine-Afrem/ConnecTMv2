@@ -37,7 +37,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
   // useEffect to set a default location if none is provided
   useEffect(() => {
     if (!location) {
-      setLocation('New York');  // Example default location
+      setLocation('');  // Example default location
     }
   }, [location, setLocation]);  // Runs only when the location is empty
 
@@ -98,7 +98,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
             onChange={(e) => setSearchRadius(parseInt(e.target.value))}
             aria-label="Search radius"
           />
-          <RadiusLabel>{searchRadius} miles</RadiusLabel>
+          <RadiusLabel>{searchRadius} km</RadiusLabel>
         </RadiusContainer>
 
         <CategorySelect

@@ -34,13 +34,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const reqBody = await request.json();
-    const { userId, firstName, lastName, phone, address, bio, profileImageUrl} = reqBody;
+    const { userId, firstName, lastName, phone, address, bio, profileImageUrl, skills } = reqBody;
 
     if (!userId || !firstName || !lastName) {
       return NextResponse.json({ error: 'User ID, First Name, and Last Name are required' }, { status: 400 });
     }
 
-    const updatedFields: any[] = [firstName, lastName, phone, address, bio, profileImageUrl];
+    const updatedFields: any[] = [firstName, lastName, phone, address, bio, profileImageUrl, skills];
     if (updatedFields.some((field) => typeof field === 'undefined')) {
       return NextResponse.json({ error: 'Some fields are missing or invalid' }, { status: 400 });
     }
@@ -54,17 +54,17 @@ export async function POST(request: NextRequest) {
       
       await connection.promise().query(
         `UPDATE Profiles 
-        SET first_name = ?, last_name = ?, phone = ?, address = ?, bio = ?, profile_image_url = ?, updated_at = NOW() 
+        SET first_name = ?, last_name = ?, phone = ?, address = ?, bio = ?, profile_image_url = ?, skills = ?, updated_at = NOW() 
         WHERE user_id = ?`,
-        [firstName, lastName, phone, address, bio, profileImageUrl, userId]
+        [firstName, lastName, phone, address, bio, profileImageUrl, skills, userId]
       );
 
       return NextResponse.json({ message: 'Profile updated successfully', success: true });
     } else {
       await connection.promise().query(
-        `INSERT INTO Profiles (user_id, first_name, last_name, phone, address, bio, profile_image_url) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [userId, firstName, lastName, phone, address, bio, profileImageUrl]
+        `INSERT INTO Profiles (user_id, first_name, last_name, phone, address, bio, profile_image_url, skills) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, firstName, lastName, phone, address, bio, profileImageUrl, skills]
       );
 
       return NextResponse.json({ message: 'Profile created successfully', success: true });
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const reqBody = await request.json();
-    const { userId, firstName, lastName, phone, address, bio, profileImageUrl } = reqBody;
+    const { userId, firstName, lastName, phone, address, bio, profileImageUrl, skills } = reqBody;
 
     if (!userId || !firstName || !lastName) {
       return NextResponse.json({ error: 'User ID, First Name, and Last Name are required' }, { status: 400 });
@@ -98,9 +98,9 @@ export async function PUT(request: NextRequest) {
     // Update the profile
     await connection.promise().query(
       `UPDATE Profiles 
-      SET first_name = ?, last_name = ?, phone = ?, address = ?, bio = ?, profile_image_url = ?, updated_at = NOW() 
+      SET first_name = ?, last_name = ?, phone = ?, address = ?, bio = ?, profile_image_url = ?, skills = ?, updated_at = NOW() 
       WHERE user_id = ?`,
-      [firstName, lastName, phone, address, bio, profileImageUrl, userId]
+      [firstName, lastName, phone, address, bio, profileImageUrl, skills, userId]
     );
 
     return NextResponse.json({ message: 'Profile updated successfully', success: true });

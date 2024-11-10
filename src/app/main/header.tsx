@@ -22,9 +22,10 @@ interface HeaderProps {
   eventStats: EventStats;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) => {
+const Header: React.FC<HeaderProps & { userId: string }> = ({ user, signIn, signOut, eventStats, userId }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const router = useRouter();
+  const [points, setPoints] = useState<number | null>(null);
 
   const toggleProfileMenu = () => {
     setShowProfileMenu(!showProfileMenu);
@@ -46,22 +47,16 @@ const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) =>
   return (
     <StyledHeader>
       <LogoSection>
-        <StyledLogo>ConnecTM</StyledLogo>
+        <StyledLogo onClick={() => router.push('/main')}>ConnecTM</StyledLogo>
       </LogoSection>
 
       <UserSection>
-        {/* Skill Points Box shown only on large screens */}
         {user && (
-          <SkillPointsBox>
-            Skill Points: {eventStats.activeUsers}
-          </SkillPointsBox>
-        )}
-
-        {/* SignIn button or Profile icon */}
-        {!user ? (
-          <SignInButton onClick={signIn}>Sign In</SignInButton>
-        ) : (
           <>
+            <SkillPointsBox>
+              Skill Points: {points}
+            </SkillPointsBox>
+
             <ProfileButton onClick={toggleProfileMenu}>
               <ProfileImage
                 src={user.profilePicture || 'https://png.pngitem.com/pimgs/s/508-5087146_circle-hd-png-download.png'}
@@ -71,8 +66,8 @@ const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) =>
 
             {showProfileMenu && (
               <ProfileMenu>
-                <MenuItem>{user.email}</MenuItem> {/* Display email here */}
-                <MenuItem> Skill Points: {eventStats.activeUsers}</MenuItem>
+                <MenuItem>{user.email}</MenuItem>
+                <MenuItem> Skill Points: {points || eventStats.activeUsers}</MenuItem>
                 <MenuItem onClick={goToProfile}>View Profile</MenuItem>
                 <MenuItem onClick={goToFunds}>View Funds</MenuItem>
                 <MenuItem onClick={logout}>Log Out</MenuItem>
@@ -80,6 +75,10 @@ const Header: React.FC<HeaderProps> = ({ user, signIn, signOut, eventStats }) =>
             )}
           </>
         )}
+
+        {!user ? (
+          <SignInButton onClick={signIn}>Sign In</SignInButton>
+        ) : null}
       </UserSection>
     </StyledHeader>
   );
@@ -99,7 +98,7 @@ const StyledHeader = styled.header`
   z-index: 10;
 
   @media (max-width: 768px) {
-    padding: 15px 20px;  // Smaller padding on mobile
+    padding: 15px 20px;
   }
 `;
 
@@ -114,6 +113,13 @@ const StyledLogo = styled.h1`
   font-size: 24px;
   font-weight: bold;
   color: #f0f0f0;
+  cursor: pointer;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+
+  &:hover {
+    color: #dcdcdc;
+    text-shadow: 0 2px 6px rgba(255, 255, 255, 0.5);
+  }
 `;
 
 const UserSection = styled.div`
@@ -135,7 +141,7 @@ const SkillPointsBox = styled.div`
   white-space: nowrap;
 
   @media (max-width: 768px) {
-    display: none;  // Hide skill points box on small screens
+    display: none;
   }
 `;
 
@@ -144,8 +150,7 @@ const SignInButton = styled.button`
   background-color: #dedede;
   color: #293691;
   border-radius: 30px;
-  border-color: #293691;
-  border: solid 1 px;
+  border: solid 1px #293691;
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
@@ -176,14 +181,13 @@ const ProfileImage = styled.img`
 `;
 
 const ProfileMenu = styled.div`
-  background-color: #0f1454; /* Updated background color */
+  background-color: #0f1454;
   padding: 15px;
   position: absolute;
   right: 20px;
   top: 70px;
   border-radius: 18px;
-  border: solid 4px;
-  border-color: #2e348f;
+  border: solid 4px #2e348f;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 100;
 `;

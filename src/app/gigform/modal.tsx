@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { InputField } from './inputfield';
 import { TextAreaField } from './textareafield';
-import { ImageUpload } from './imageupload';
 import { SubmitButton } from './submitbutton';
 
 interface NewGig {
@@ -173,9 +173,6 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit, categories, us
             <InputField label="Location" name="location" value={newGig.location} onChange={handleInputChange} required />
             <InputField label="City" name="city" value={newGig.city} onChange={handleInputChange} required />
             <TextAreaField label="Description" name="description" value={newGig.description} onChange={handleInputChange} required />
-            <ImageUpload label="Image" onChange={handleImageUpload} previewImage={previewImage} />
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-            {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
             <SubmitButton loading={loading} />
           </form>
         </ModalContainer>
@@ -208,8 +205,10 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background-color: #1e293b;
-  border-radius: 8px;
+  background-color: #383d70;
+  border-radius: 20px;
+  border: solid 4px;
+  border-color: #202340;
   padding: 20px;
   max-width: 500px;
   width: 100%;
@@ -241,13 +240,14 @@ const SelectContainer = styled.div`
   flex-direction: column;
   margin-bottom: 16px;
   color: #ffffff;
+  border-radius: 18px;
 `;
 
 const StyledSelect = styled.select`
   padding: 12px;
-  background-color: #334155;
-  color: #ffffff;
-  border: 2px solid #6366f1;
+  background-color: #dedede;
+  color: #202340;
+  border: 2px solid #202340;
   border-radius: 4px;
   outline: none;
   font-size: 16px;
@@ -255,17 +255,17 @@ const StyledSelect = styled.select`
   transition: border-color 0.3s, background-color 0.3s;
 
   &:hover {
-    background-color: #3b4252;
-    border-color: #4f46e5;
+    background-color: #b5b5b5;
+    border-color: #ffff;
   }
 
   &:focus {
-    border-color: #4f46e5;
+    border-color: #ffff;
   }
 `;
 
 const StyledOption = styled.option`
-  background-color: #334155;
+  background-color: #dedede;
   color: #ffffff;
 `;
 

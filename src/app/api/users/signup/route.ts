@@ -19,12 +19,12 @@ interface Profile {
 }
 
 async function sendVerificationEmail(email: string, token: string) {
-  const verificationLink = `http://localhost:3000/verify?token=${token}`;
+  const verificationLink = `http://localhost:3000/api/verify-email?token=${token}`;
 
   try {
     await resend.emails.send({
       from: 'admin@scof.live',
-      to: 'ctgmarius@gmail.com',
+      to: email,
       subject: 'Verify Your Email!',
       html: `<p>Welcome to n0exp!</p>
         <p>Please confirm your email address by clicking the link below:</p>

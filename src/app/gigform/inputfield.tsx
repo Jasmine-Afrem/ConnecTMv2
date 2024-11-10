@@ -39,14 +39,15 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 8px;
-  border-radius: 12px;
+  border-radius: 20px;
   border: 2px solid rgba(255, 255, 255, 0.12);
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background-color: #dedede;
+  color: #202340;
   transition: all 0.2s ease;
 
   &:focus {
     outline: none;
+    color: #202340;
     border-color: rgba(255, 255, 255, 0.3);
   }
 `;

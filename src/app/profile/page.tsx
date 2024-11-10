@@ -17,6 +17,7 @@ interface Profile {
   address: string;
   bio: string;
   profile_image_url: string | null;
+  skills: string; // Skills as a string
 }
 
 const ProfilePage = () => {
@@ -29,6 +30,7 @@ const ProfilePage = () => {
     address: '',
     bio: '',
     profileImageUrl: '',
+    skills: '', // Add skills field in form data
   });
   const [userId, setUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true); // Loading state
@@ -84,6 +86,7 @@ const ProfilePage = () => {
           address: data.profile.address || '',
           bio: data.profile.bio || '',
           profileImageUrl: data.profile.profile_image_url || '',
+          skills: data.profile.skills || '', // Ensure skills is handled as a string
         });
       } else {
         setError('Profile not found.');
@@ -130,6 +133,7 @@ const ProfilePage = () => {
           address: formData.address,
           bio: formData.bio,
           profileImageUrl: formData.profileImageUrl,
+          skills: formData.skills, // Include skills in update request
         }),
       });
 
@@ -149,9 +153,9 @@ const ProfilePage = () => {
     }
   };
 
-  // Show the Loading component for 3 seconds while loading is true
+  // Show the Loading component while loading is true
   if (loading) {
-    return <Loading />; // Show loading component
+    return <Loading loading={true} />; // Show loading component
   }
 
   return (
@@ -214,6 +218,14 @@ const ProfilePage = () => {
               value={formData.bio}
               onChange={handleChange}
               placeholder="Tell us about yourself"
+            />
+            <FormField
+              label="Skills"
+              type="text"
+              name="skills"
+              value={formData.skills}
+              onChange={handleChange}
+              placeholder="Skills"
             />
             {error && <ErrorMessage>{error}</ErrorMessage>}
             <ButtonWrapper>
@@ -290,58 +302,46 @@ const ProfileImageWrapper = styled.div`
   margin-bottom: 20px;
 
   .profile-image {
+    border-radius: 50%;
     width: 60px;
     height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
   }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 8px;
   width: 100%;
-  max-width: 800px;
-  flex-grow: 1;
-`;
-
-const ErrorMessage = styled.div`
-  color: #ef4444;
-  font-size: 10px;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background-color: rgba(239, 68, 68, 0.1);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 20px;
-  justify-content: center;
 `;
 
 const ButtonWrapper = styled.div`
+  margin-top: 30px;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
 `;
 
 const StyledButton = styled(Button)`
-  width: 130px;
-  border-radius: 20px;
+  padding: 15px 32px;
+  font-size: 16px;
+`;
+
+const ActionButtons = styled.div`
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const StyledActionButton = styled(Button)`
-  flex: 1;
-  width: 100px;
-  border-radius: 20px;
+  margin-top: 20px;
+  padding: 15px 32px;
+  font-size: 16px;
+`;
+
+const ErrorMessage = styled.p`
+  color: red;
+  font-size: 14px;
+  text-align: center;
 `;
 
 export default ProfilePage;

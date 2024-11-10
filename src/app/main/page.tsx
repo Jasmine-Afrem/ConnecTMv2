@@ -22,6 +22,18 @@ interface EventStats {
   totalEvents: number;
 }
 
+interface Gig {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  location: string;
+  points: number;
+  imageUrl: string;
+  duration: string;
+  problemOwner: string;
+}
+
 const SkillSharePlatform: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -29,7 +41,9 @@ const SkillSharePlatform: React.FC = () => {
   const [location, setLocation] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(10);
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true); // Combined loading state
+  const [userId, setUserId] = useState<string | null>(null);
+  const [gigs, setGigs] = useState<Gig[]>([]); // Store all gigs
   const router = useRouter();
 
   // Check if user is logged in using JWT
@@ -46,6 +60,7 @@ const SkillSharePlatform: React.FC = () => {
       if (response.ok && data.success) {
         setUser({ email: data.email, id: data.userId, profilePicture: data.profilePicture });
         setIsLoggedIn(true);
+        setUserId(data.userId);
         updateEventStats(true);
       } else {
         setIsLoggedIn(false);
@@ -59,14 +74,45 @@ const SkillSharePlatform: React.FC = () => {
         alert('Unknown error: ' + String(error));
       }
       setIsLoggedIn(false);
-    } finally {
-      setLoading(false); // Set loading to false after the auth check is done
+    }
+  }, []);
+
+  // Fetch event stats or any additional data here
+  const fetchEventStats = useCallback(async () => {
+    try {
+      const response = await fetch('/api/eventStats');
+      const data = await response.json();
+      setEventStats(data);
+    } catch (error) {
+      console.error('Error fetching event stats:', error);
+    }
+  }, []);
+
+  // Fetch available gigs
+  const fetchGigs = useCallback(async () => {
+    try {
+      const response = await fetch('/api/gig');
+      if (response.ok) {
+        const data = await response.json();
+        setGigs(data.gigs); // Assuming the response contains a 'gigs' array
+      } else {
+        console.error('Failed to fetch gigs');
+      }
+    } catch (error) {
+      console.error('Error fetching gigs:', error);
     }
   }, []);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    const fetchData = async () => {
+      await checkAuth();
+      await fetchEventStats();
+      await fetchGigs();
+      setLoading(false); // Set loading to false once all data is fetched
+    };
+
+    fetchData();
+  }, [checkAuth, fetchEventStats, fetchGigs]);
 
   const updateEventStats = (isLoggedIn: boolean) => {
     setEventStats(prevStats => ({
@@ -92,49 +138,48 @@ const SkillSharePlatform: React.FC = () => {
     router.push('/login');
   };
 
-  // Show loading spinner while checking authentication
+  // Show loading spinner while checking authentication or fetching data
   if (loading) {
-    return <Loading />; // Show the loading screen while waiting for auth
+    return <Loading loading={true} />; // Show the loading screen while waiting for auth and data
   }
 
-// Inside SkillSharePlatform Component:
+  return (
+    <StyledSkillSharePlatform>
+      <StyledTaskMarketplace>
+        <Header
+          user={user}
+          signOut={signOut}
+          signIn={signIn}
+          eventStats={eventStats}
+          userId={userId ?? ''}
+        />
+        
+        {/* Show PromotionalPanel only when not logged in */}
+        {!isLoggedIn && <PromotionalPanel eventStats={eventStats} />}
 
-return (
-  <StyledSkillSharePlatform>
-    <StyledTaskMarketplace>
-      <Header
-        user={user}
-        signOut={signOut}
-        signIn={signIn}
-        eventStats={eventStats}
-      />
-      
-      {/* Show PromotionalPanel only when not logged in */}
-      {!isLoggedIn && <PromotionalPanel eventStats={eventStats} />}
+        {/* Only render HelpPrompt when logged in */}
+        {isLoggedIn && <HelpPrompt onCreateGig={() => router.push('/gigform')} />}
 
-      {/* Only render HelpPrompt when logged in */}
-      {isLoggedIn && <HelpPrompt onCreateGig={() => router.push('/gigform')} />}
+        {/* Show SearchSection and AvailableGigs only when logged in */}
+        {isLoggedIn && (
+          <>
+            <SearchSection
+              location={location}
+              setLocation={setLocation}
+              searchRadius={searchRadius}
+              setSearchRadius={setSearchRadius}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
+            <AvailableGigs gigs={gigs} userId={userId ?? ''} />
+          </>
+        )}
 
-      {/* Show SearchSection and AvailableGigs only when logged in */}
-      {isLoggedIn && (
-        <>
-          <SearchSection
-            location={location}
-            setLocation={setLocation}
-            searchRadius={searchRadius}
-            setSearchRadius={setSearchRadius}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-          />
-          <AvailableGigs />
-        </>
-      )}
-
-      <ContactAndMapSection />
-    </StyledTaskMarketplace>
-  </StyledSkillSharePlatform>
-);
-};
+        <ContactAndMapSection />
+      </StyledTaskMarketplace>
+    </StyledSkillSharePlatform>
+  );
+};  
 
 // Styled Components
 const StyledSkillSharePlatform = styled.div`

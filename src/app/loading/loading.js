@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 
 // Define global styles for keyframes and other CSS
@@ -52,16 +52,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-const Loading = () => {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading state; replace with real data fetching or authentication check
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000); // Set loading state to false after 3 seconds (simulate page loading)
-  }, []);
-
+const Loading = ({ loading }) => {
   if (!loading) {
     return null; // If loading is done, hide the loading screen
   }

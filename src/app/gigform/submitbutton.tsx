@@ -24,8 +24,8 @@ const ButtonContainer = styled.div`
 
 const Button = styled.button`
   padding: 10px 24px;
-  background-color: #2563eb;
-  color: white;
+  background-color: #dedede;
+  color: #202340;
   border: none;
   border-radius: 24px;
   cursor: pointer;
@@ -35,7 +35,7 @@ const Button = styled.button`
   letter-spacing: 0.3px;
 
   &:hover {
-    background-color: #1d4ed8;
+    background-color: #b5b5b5;
   }
 
   &:disabled {

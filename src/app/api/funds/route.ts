@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/api/funds/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';

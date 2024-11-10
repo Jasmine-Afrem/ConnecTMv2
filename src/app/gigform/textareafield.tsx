@@ -42,8 +42,8 @@ const TextArea = styled.textarea`
   border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.12);
   resize: vertical;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background-color: #dedede;
+  color: #202340;
   transition: all 0.2s ease;
 
   &:focus {

@@ -1,5 +1,5 @@
-'use client'; 
-import React, { useState } from 'react';
+'use client';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 interface Gig {
@@ -10,65 +10,26 @@ interface Gig {
   skillPoints: number;
   duration: string;
   imageUrl: string;
-  problemOwner: string; // Added the owner of the problem
+  problemOwner: string;
 }
 
-const AvailableGigs: React.FC = () => {
-  const [gigs] = useState<Gig[]>([
-    {
-      id: '1',
-      title: 'Solve Math Problem for High School',
-      category: 'Math',
-      description: 'A student needs help solving complex calculus problems for an upcoming exam.',
-      skillPoints: 200,
-      duration: '2 hours ago',
-      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
-      problemOwner: 'John Doe',
-    },
-    {
-      id: '2',
-      title: 'Design Logo for Startup',
-      category: 'Design',
-      description: 'A new startup needs a creative and modern logo to establish its brand identity.',
-      skillPoints: 300,
-      duration: '5 hours ago',
-      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
-      problemOwner: 'Jane Smith',
-    },
-    {
-      id: '3',
-      title: 'Build a Personal Website',
-      category: 'Development',
-      description: 'A professional needs a responsive and modern website to showcase their portfolio.',
-      skillPoints: 500,
-      duration: '10 hours ago',
-      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
-      problemOwner: 'Alex Johnson',
-    },
-    {
-      id: '4',
-      title: 'Create a Marketing Strategy for Small Business',
-      category: 'Marketing',
-      description: 'A small business needs an online marketing strategy to boost its sales and visibility.',
-      skillPoints: 150,
-      duration: '4 hours ago',
-      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
-      problemOwner: 'Emily Davis',
-    },
-    {
-      id: '5',
-      title: 'Photography for Product Launch',
-      category: 'Photography',
-      description: 'A company needs professional photography for an upcoming product launch.',
-      skillPoints: 250,
-      duration: '3 hours ago',
-      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
-      problemOwner: 'Chris Lee',
-    },
-    // Add more gigs here if needed...
-  ]);
+const categoryImageMap: Record<string, string> = {
+  'Web Development': 'https://cdn-icons-png.flaticon.com/512/11485/11485970.png',
+  'Health & Wellness': 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png',
+  'Technology': 'https://png.pngtree.com/png-vector/20230316/ourmid/pngtree-coding-line-icon-vector-png-image_6652750.png',
+  'Education': 'https://cdn-icons-png.flaticon.com/512/3778/3778120.png',
+  'Entertainment': 'https://cdn-icons-png.freepik.com/256/16494/16494990.png',
+  'Services': 'https://cdn-icons-png.flaticon.com/512/4269/4269480.png',
+};
 
+interface AvailableGigsProps {
+  gigs: Gig[];
+  userId: string;
+}
+
+const AvailableGigs: React.FC<AvailableGigsProps> = ({ gigs, userId }) => {
   const [showAllGigs, setShowAllGigs] = useState(false);
+  const [loading, setLoading] = useState(false); // Track loading state
 
   const toggleMoreGigs = () => {
     setShowAllGigs(!showAllGigs);
@@ -76,10 +37,41 @@ const AvailableGigs: React.FC = () => {
 
   const displayedGigs = showAllGigs ? gigs : gigs.slice(0, 3);
 
-  const handleApplyClick = (gigId: string) => {
-    alert(`You have applied for gig: ${gigId}`);
-    // Implement actual application logic here (e.g., sending a request to the backend)
+  const handleApplyClick = async (gigId: string) => {
+    if (!userId) {
+      alert('Please log in to apply for gigs');
+      return;
+    }
+
+    try {
+      setLoading(true); // Start loading
+      const response = await fetch('/api/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gigId,
+          userId,
+        }),
+      });
+
+      if (response.ok) {
+        alert('You have successfully applied for this gig!');
+      } else {
+        alert('Failed to apply for the gig. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error applying for gig:', error);
+      alert('An error occurred while applying for the gig.');
+    } finally {
+      setLoading(false); // End loading
+    }
   };
+
+  if (loading) {
+    return <p>Loading...</p>; // Show loading text until the application request is complete
+  }
 
   return (
     <GigsSection>
@@ -87,7 +79,10 @@ const AvailableGigs: React.FC = () => {
       <GigsGrid>
         {displayedGigs.map((gig) => (
           <GigCard key={gig.id}>
-            <GigImage src={gig.imageUrl} alt={gig.title} />
+            <GigImage
+              src={categoryImageMap[gig.category] || 'https://via.placeholder.com/400x200.png?text=No+Image'}
+              alt={gig.category}
+            />
             <GigContent>
               <GigCategory>{gig.category}</GigCategory>
               <GigTitle>{gig.title}</GigTitle>
@@ -116,7 +111,7 @@ const AvailableGigs: React.FC = () => {
 };
 
 const GigsSection = styled.section`
-  background-color: rgba(15, 20, 84, 0.89); 
+  background-color: rgba(15, 20, 84, 0.89);
   padding: 30px;
   border-radius: 12px;
   margin-bottom: 30px;
@@ -168,6 +163,7 @@ const GigImage = styled.img`
   width: 100%;
   height: 200px;
   object-fit: cover;
+  margin: 0 auto;
 `;
 
 const GigContent = styled.div`
@@ -193,6 +189,7 @@ const GigDescription = styled.p`
   color: #d1d5db;
   font-size: 14px;
   margin-bottom: 16px;
+  -webkit-line-clamp: 3; /* Limit the description to 3 lines */
 `;
 
 const GigDetails = styled.div`
