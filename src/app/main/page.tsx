@@ -9,6 +9,7 @@ import AvailableGigs from './availablegigs';
 import ContactAndMapSection from './contactandmapsection';
 import HelpPrompt from './prompt';
 import { useRouter } from 'next/navigation';
+import Loading from '@/app/loading/loading'; // Import the Loading component
 
 interface User {
   email: string;
@@ -28,8 +29,10 @@ const SkillSharePlatform: React.FC = () => {
   const [location, setLocation] = useState<string>('');
   const [searchRadius, setSearchRadius] = useState<number>(10);
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
+  const [loading, setLoading] = useState(true); // Add loading state
   const router = useRouter();
 
+  // Check if user is logged in using JWT
   const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/protected', {
@@ -56,6 +59,8 @@ const SkillSharePlatform: React.FC = () => {
         alert('Unknown error: ' + String(error));
       }
       setIsLoggedIn(false);
+    } finally {
+      setLoading(false); // Set loading to false after the auth check is done
     }
   }, []);
 
@@ -72,18 +77,11 @@ const SkillSharePlatform: React.FC = () => {
 
   const signOut = async () => {
     try {
-      // Clear the cookie with explicit path and domain if necessary
       document.cookie = "token=; path=/; domain=" + window.location.hostname + "; max-age=0; SameSite=Strict; Secure";
-      
-      // Update state and stats
       setUser(null);
       setIsLoggedIn(false);
       updateEventStats(false);
-  
-      // Optionally, call a logout API endpoint to clear the session
       await fetch('/api/users/logout', { method: 'POST', credentials: 'include' });
-      
-      // Navigate to main page after sign-out
       router.push('/main');
     } catch (error) {
       console.error('Error during sign-out:', error);
@@ -94,22 +92,32 @@ const SkillSharePlatform: React.FC = () => {
     router.push('/login');
   };
 
-  return (
-    <StyledSkillSharePlatform>
-      <StyledTaskMarketplace>
-        <Header
-          user={user}
-          signOut={signOut}
-          signIn={signIn}
-          eventStats={eventStats}
-        />
-        
-        {!isLoggedIn && <PromotionalPanel eventStats={eventStats} />}
-        
-        {/* Render HelpPrompt in all cases and pass isLoggedIn prop */}
-        <HelpPrompt onCreateGig={isLoggedIn ? () => router.push('/gigform') : signIn} />
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return <Loading />; // Show the loading screen while waiting for auth
+  }
 
-        {isLoggedIn && (
+// Inside SkillSharePlatform Component:
+
+return (
+  <StyledSkillSharePlatform>
+    <StyledTaskMarketplace>
+      <Header
+        user={user}
+        signOut={signOut}
+        signIn={signIn}
+        eventStats={eventStats}
+      />
+      
+      {/* Show PromotionalPanel only when not logged in */}
+      {!isLoggedIn && <PromotionalPanel eventStats={eventStats} />}
+
+      {/* Only render HelpPrompt when logged in */}
+      {isLoggedIn && <HelpPrompt onCreateGig={() => router.push('/gigform')} />}
+
+      {/* Show SearchSection and AvailableGigs only when logged in */}
+      {isLoggedIn && (
+        <>
           <SearchSection
             location={location}
             setLocation={setLocation}
@@ -118,28 +126,29 @@ const SkillSharePlatform: React.FC = () => {
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
           />
-        )}
-        
-        {isLoggedIn && <AvailableGigs />}
-        
-        <ContactAndMapSection />
-      </StyledTaskMarketplace>
-    </StyledSkillSharePlatform>
-  );
+          <AvailableGigs />
+        </>
+      )}
+
+      <ContactAndMapSection />
+    </StyledTaskMarketplace>
+  </StyledSkillSharePlatform>
+);
 };
 
+// Styled Components
 const StyledSkillSharePlatform = styled.div`
   background-color: #424a59;
+  background-image: url('https://www.shutterstock.com/image-vector/business-job-icon-doodle-seamless-600nw-2285217401.jpg'); /* Correct URL */
+  background-size: auto;
+  background-position: center;
+  background-attachment: fixed;
   min-height: 100vh;
   padding: 20px;
-  @media (max-width: 640px) {
-    padding: 10px;
-    min-height: auto;
-  }
 `;
 
 const StyledTaskMarketplace = styled.main`
-  background-color: #424a59;
+  background-color: transparent;
   min-height: 100vh;
   padding: 40px 20px;
   font-family: Inter, system-ui, -apple-system, sans-serif;

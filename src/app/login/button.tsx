@@ -20,15 +20,15 @@ export const Button: React.FC<ButtonProps> = ({ type, disabled, children }) => {
 const StyledButton = styled.button`
   width: 100%;
   padding: 18px 28px;
-  background-color: #3b82f6;
-  color: #ffffff;
-  border-radius: 16px;
+  background-color: #ffff;
+  color: #3d50d4;
+  border-radius: 32px;
   font-size: 16px;
   font-weight: 700;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #ffff, #ffff);
   background-size: 400% 400%;
   animation: gradient 8s ease infinite;
   letter-spacing: 0.3px;
@@ -43,12 +43,13 @@ const StyledButton = styled.button`
 
   &:not(:disabled):hover {
     transform: translateY(-2px);
-    background-color: #2862bf;
+    background-color: #dedede;
     box-shadow: 0 6px 8px -2px rgba(59, 130, 246, 0.6), 0 4px 6px -1px rgba(59, 130, 246, 0.1);
   }
 
   &:not(:disabled):active {
     transform: translateY(0);
+    background-color: #dedede;
     box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.4), 0 1px 2px -1px rgba(59, 130, 246, 0.04);
   }
 

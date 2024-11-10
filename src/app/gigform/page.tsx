@@ -1,77 +1,184 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import Modal from './modal';
-import Header from './header'; // Import the Header component
+import Header from './header';
 
 interface GigData {
+  id: number;
+  user_id: number;
   title: string;
   category: string;
   location: string;
   description: string;
-  image: File | null;
+  points: number;
+  city: string;
+  image_url?: string;
 }
 
 interface CreateGigFormProps {
-  onSubmit: (gig: GigData) => Promise<void>;
   categories: string[];
 }
 
-const CreateGigForm: React.FC<CreateGigFormProps> = ({ onSubmit, categories = [] }) => {
+export default function CreateGigForm({ categories = [] }: CreateGigFormProps) {
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [gigs, setGigs] = useState<GigData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  // Example user data for Header
-  const [user, setUser] = useState<User | null>(null); // Adjust based on your actual auth state
-  const [skillPoints, setSkillPoints] = useState(100); // Example skill points, adjust as needed
-
-  // Mock sign-in and sign-out functions
-  const signIn = (email: string, password: string) => {
-    // Example sign-in logic; replace with actual logic
-    setUser({ email });
+  // Function to handle user sign-out
+  const signOut = async () => {
+    try {
+      document.cookie = "token=; path=/; domain=" + window.location.hostname + "; max-age=0; SameSite=Strict; Secure";
+      setLoggedIn(false);
+      setUserId(null);
+      setEmail(null);
+      await fetch('/api/users/logout', { method: 'POST', credentials: 'include' });
+      router.push('/main');
+    } catch (error) {
+      console.error('Error during sign-out:', error);
+    }
   };
 
-  const signOut = () => {
-    setUser(null);
+  // Fetch gigs from your API
+  const fetchGigs = async (userId: number) => {
+    try {
+      const response = await fetch('/api/gig', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to fetch gigs:', errorData.message);
+        setError(errorData.message);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Fetched gigs:', data);
+
+      // Filter gigs by authenticated user's userId
+      const userGigs = data.gigs.filter((gig: GigData) => gig.user_id === userId);
+      setGigs(userGigs);
+    } catch (error) {
+      console.error('Error fetching gigs:', error);
+      setError('Failed to load gigs. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Ensure component only renders on the client
+  // Check authentication and fetch gigs if authenticated
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/protected', {
+          method: 'GET',
+          credentials: 'include',
+        });
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
+        const text = await response.text();
+        const data = JSON.parse(text);
+
+        if (response.ok && data.success) {
+          setLoggedIn(true);
+          setUserId(data.userId);
+          setEmail(data.email);
+
+          // Fetch gigs only after successfully getting the user ID
+          fetchGigs(data.userId);
+        } else {
+          setLoggedIn(false);
+          router.push('/main');
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        setLoggedIn(false);
+        router.push('/main');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  useEffect(() => {
+    if (loggedIn) {
+      setIsClient(true);
+      setIsModalOpen(true);
+    }
+  }, [loggedIn]);
+
+  if (loggedIn === null || loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <>
-      {/* Include the Header at the top */}
-      <Header 
-        user={user} 
-        skillPoints={skillPoints} 
-        signIn={signIn} 
-        signOut={signOut} 
-      />
+      {loggedIn ? (
+        <>
+          <Header
+            user={{ id: String(userId ?? 0), email: email ?? '' }}
+            skillPoints={100}
+            signIn={() => {}}
+            signOut={signOut}
+          />
 
-      {/* Button to trigger the modal */}
-      <OpenModalButton onClick={toggleModal}>Create New Gig</OpenModalButton>
+          <OpenModalButton onClick={() => setIsModalOpen(true)}>Create New Gig</OpenModalButton>
 
-      {/* Conditionally render the Modal only after client has mounted */}
-      {isClient && (
-        <Modal
-          isOpen={isModalOpen}
-          onClose={toggleModal}
-          onSubmit={onSubmit}
-          categories={categories}
-        />
+          {isClient && (
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              categories={categories}
+              userId={userId}
+              fetchGigs={fetchGigs}
+            />
+          )}
+
+          {/* Display fetched gigs */}
+          {error ? (
+            <ErrorMessage>{error}</ErrorMessage>
+          ) : gigs.length > 0 ? (
+            <GigList>
+              {gigs.map((gig) => (
+                <GigCard key={gig.id}>
+                  <h3>{gig.title}</h3>
+                  <p><strong>Category:</strong> {gig.category}</p>
+                  <p><strong>Location:</strong> {gig.location}</p>
+                  <p><strong>City:</strong> {gig.city}</p>
+                  <p>{gig.description}</p>
+                  <p><strong>Points:</strong> {gig.points}</p>
+                  {gig.image_url && <img src={gig.image_url} alt={gig.title} />}
+                  
+                  {/* View Proposals Button */}
+                  {isClient && (
+                    <ViewProposalsButton onClick={() => router.push(`/proposal?gigId=${gig.id}`)}>
+                      View Proposals
+                    </ViewProposalsButton>
+                  )}
+                </GigCard>
+              ))}
+            </GigList>
+          ) : (
+            <p>No gigs found.</p>
+          )}
+        </>
+      ) : (
+        <h1>Redirecting...</h1>
       )}
     </>
   );
-};
+}
 
-// Styled components for the button
+// Styled Components
 const OpenModalButton = styled.button`
   padding: 10px 20px;
   font-size: 16px;
@@ -85,4 +192,40 @@ const OpenModalButton = styled.button`
   }
 `;
 
-export default CreateGigForm;
+const ErrorMessage = styled.p`
+  color: red;
+  font-size: 18px;
+`;
+
+const GigList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const GigCard = styled.div`
+  background-color: #1e293b;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 300px;
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+`;
+
+const ViewProposalsButton = styled.button`
+  padding: 10px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  &:hover {
+    background-color: #388e3c;
+  }
+`;

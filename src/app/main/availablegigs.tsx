@@ -22,7 +22,7 @@ const AvailableGigs: React.FC = () => {
       description: 'A student needs help solving complex calculus problems for an upcoming exam.',
       skillPoints: 200,
       duration: '2 hours ago',
-      imageUrl: 'https://placehold.co/300x200',
+      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
       problemOwner: 'John Doe',
     },
     {
@@ -32,7 +32,7 @@ const AvailableGigs: React.FC = () => {
       description: 'A new startup needs a creative and modern logo to establish its brand identity.',
       skillPoints: 300,
       duration: '5 hours ago',
-      imageUrl: 'https://placehold.co/300x200',
+      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
       problemOwner: 'Jane Smith',
     },
     {
@@ -42,7 +42,7 @@ const AvailableGigs: React.FC = () => {
       description: 'A professional needs a responsive and modern website to showcase their portfolio.',
       skillPoints: 500,
       duration: '10 hours ago',
-      imageUrl: 'https://placehold.co/300x200',
+      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
       problemOwner: 'Alex Johnson',
     },
     {
@@ -52,7 +52,7 @@ const AvailableGigs: React.FC = () => {
       description: 'A small business needs an online marketing strategy to boost its sales and visibility.',
       skillPoints: 150,
       duration: '4 hours ago',
-      imageUrl: 'https://placehold.co/300x200',
+      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
       problemOwner: 'Emily Davis',
     },
     {
@@ -62,7 +62,7 @@ const AvailableGigs: React.FC = () => {
       description: 'A company needs professional photography for an upcoming product launch.',
       skillPoints: 250,
       duration: '3 hours ago',
-      imageUrl: 'https://placehold.co/300x200',
+      imageUrl: 'https://t4.ftcdn.net/jpg/04/99/93/31/360_F_499933117_ZAUBfv3P1HEOsZDrnkbNCt4jc3AodArl.jpg',
       problemOwner: 'Chris Lee',
     },
     // Add more gigs here if needed...
@@ -116,7 +116,7 @@ const AvailableGigs: React.FC = () => {
 };
 
 const GigsSection = styled.section`
-  background-color: #1e293b;
+  background-color: rgba(15, 20, 84, 0.89); 
   padding: 30px;
   border-radius: 12px;
   margin-bottom: 30px;
@@ -151,9 +151,11 @@ const GigsGrid = styled.div`
 `;
 
 const GigCard = styled.article`
-  background-color: #374151;
+  background-color: #383d70;
   border-radius: 16px;
   overflow: hidden;
+  border: solid 2px;
+  border-color: #232647;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s ease;
 
@@ -173,8 +175,8 @@ const GigContent = styled.div`
 `;
 
 const GigCategory = styled.span`
-  background-color: #4b5563;
-  color: #e5e7eb;
+  background-color: #dedede;
+  color: #293691;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 14px;
@@ -202,7 +204,7 @@ const GigDetails = styled.div`
 `;
 
 const GigSkillPoints = styled.span`
-  color: #60a5fa;
+  color: #8d97fc;
   font-weight: 500;
 `;
 
@@ -219,9 +221,11 @@ const GigOwner = styled.div`
 
 const ApplyButton = styled.button`
   padding: 10px 20px;
-  background-color: #3b82f6;
-  color: #f9fafb;
+  background-color: #dedede;
+  color: #293691;
   border-radius: 8px;
+  border: solid 2px;
+  border-color: #293691;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -230,7 +234,7 @@ const ApplyButton = styled.button`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #2563eb;
+    background-color: #b5b5b5;
   }
 `;
 
@@ -245,8 +249,8 @@ const ToggleButtonContainer = styled.div`
 
 const ToggleButton = styled.button`
   padding: 12px 24px;
-  background-color: #3b82f6;
-  color: #f9fafb;
+  background-color: #dedede;
+  color: #293691;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 500;
@@ -255,7 +259,7 @@ const ToggleButton = styled.button`
   border: none;
 
   &:hover {
-    background-color: #2563eb;
+    background-color: #b5b5b5;
   }
 `;
 

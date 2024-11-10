@@ -38,9 +38,9 @@ const PromotionalPanel: React.FC<PromotionalPanelProps> = ({ eventStats }) => {
 };
 
 const StyledPromotionalPanel = styled.section`
-  background-color: #1f2937;  // Dark background color
+  background-color: rgba(15, 20, 84, 0.89); 
   padding: 30px;
-  border-radius: 16px;
+  border-radius: 18px;
   margin-bottom: 30px;
   display: flex;
   justify-content: space-between;
@@ -85,21 +85,23 @@ const StatsContainer = styled.div`
 
 const StatItem = styled.div`
   text-align: center;
-  background-color: #2d3748;  // Darker background for stat items
+  background-color: #dedede;  // Darker background for stat items
   padding: 12px 20px;
-  border-radius: 12px;
+  border-radius: 18px;
+  border-color: #293691;
+  border: solid 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 `;
 
 const StatValue = styled.div`
   font-size: 24px;
   font-weight: 700;
-  color: #63b3ed;  // Lighter blue for the stats
+  color: #293691;  // Lighter blue for the stats
 `;
 
 const StatLabel = styled.div`
   font-size: 14px;
-  color: #a0aec0;  // Light gray text for labels
+  color: #293691;  // Light gray text for labels
 `;
 
 const ImageSection = styled.div`

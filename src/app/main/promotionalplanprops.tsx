@@ -37,7 +37,7 @@ const PromotionalPanel: React.FC<PromotionalPanelProps> = ({ eventStats }) => {
 };
 
 const StyledPromotionalPanel = styled.section`
-  background-color: #f0f9ff;
+  background-color: #dedede;  // Reduced opacity to 0.8
   padding: 30px;
   border-radius: 16px;
   margin-bottom: 30px;
@@ -45,6 +45,7 @@ const StyledPromotionalPanel = styled.section`
   justify-content: space-between;
   align-items: center;
   gap: 40px;
+  
   @media (max-width: 640px) {
     flex-direction: column;
     padding: 20px;

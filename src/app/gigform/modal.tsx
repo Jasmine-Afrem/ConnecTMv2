@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { InputField } from './inputfield';
 import { TextAreaField } from './textareafield';
-import { SelectField } from './selectfield';
 import { ImageUpload } from './imageupload';
 import { SubmitButton } from './submitbutton';
 
@@ -12,35 +11,44 @@ interface NewGig {
   title: string;
   category: string;
   location: string;
+  city: string;
   description: string;
   image: File | null;
+  points: string;
 }
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (gig: NewGig) => Promise<void>;
+  onSubmit?: (gig: NewGig) => Promise<void>;
   categories: string[];
+  userId: number | null;
+  fetchGigs: (userId: number) => Promise<void>; // Add this line to pass the function
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit, categories }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit, categories, userId, fetchGigs }) => {
   const [newGig, setNewGig] = useState<NewGig>({
     title: '',
     category: '',
     location: '',
+    city: '',
     description: '',
     image: null,
+    points: '',
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  if (!isOpen || userId === null) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setNewGig(prev => ({ ...prev, [name]: value }));
+    setNewGig(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,71 +64,116 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit, categories }) 
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
-
+  
+    if (!userId) {
+      setError('User not authenticated.');
+      setLoading(false);
+      return;
+    }
+  
     try {
-      await onSubmit(newGig);
+      if (onSubmit) {
+        await onSubmit(newGig);
+      } else {
+        await sendGigToDatabase(newGig, userId);
+      }
+  
+      // Fetch updated gigs after submitting the new gig
+      if (fetchGigs && userId) {
+        await fetchGigs(userId); // Fetch the gigs after creating the new one
+      }
+  
       setSuccessMessage('Gig created successfully!');
       setNewGig({
         title: '',
         category: '',
         location: '',
+        city: '',
         description: '',
         image: null,
+        points: '',
       });
       setPreviewImage(null);
-    } catch {
-      setError('Failed to create gig. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create gig. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
+  };  
+
+  const sendGigToDatabase = async (gig: NewGig, userId: number) => {
+    const data = {
+      userId,
+      title: gig.title,
+      description: gig.description,
+      points: gig.points,
+      location: gig.location,
+      city: gig.city,
+      category: gig.category,
+      image: gig.image ? await convertImageToBase64(gig.image) : null,
+    };
+
+    const response = await fetch('/api/gig', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(errorMessage || 'Failed to create gig');
+    }
+
+    return await response.json();
   };
+
+  const convertImageToBase64 = (file: File) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const defaultCategories = [
+    'All Categories',
+    'Health & Wellness',
+    'Technology',
+    'Education',
+    'Entertainment',
+    'Services',
+  ];
+
+  const categoriesToUse = categories.length > 0 ? categories : defaultCategories;
 
   return (
     <>
-      {/* Backdrop */}
       <Backdrop onClick={onClose} />
-
-      {/* Modal Content */}
       <ModalOverlay>
         <ModalContainer>
           <CloseButton onClick={onClose}>×</CloseButton>
-          {/* The modal itself is now the form container */}
           <form onSubmit={handleSubmit}>
             <FormTitle>Create a New Gig</FormTitle>
-            <InputField
-              label="Title"
-              name="title"
-              value={newGig.title}
-              onChange={handleInputChange}
-              required
-            />
-            <SelectField
-              label="Category"
-              name="category"
-              value={newGig.category}
-              onChange={handleInputChange}
-              options={categories.length > 0 ? categories : ['No categories available']}
-              required
-            />
-            <InputField
-              label="Location"
-              name="location"
-              value={newGig.location}
-              onChange={handleInputChange}
-              required
-            />
-            <TextAreaField
-              label="Description"
-              name="description"
-              value={newGig.description}
-              onChange={handleInputChange}
-              required
-            />
-            <ImageUpload
-              label="Image"
-              onChange={handleImageUpload}
-              previewImage={previewImage}
-            />
+            <InputField label="Title" name="title" value={newGig.title} onChange={handleInputChange} required />
+            <InputField label="Skill Points" name="points" value={newGig.points} onChange={handleInputChange} required />
+            <SelectContainer>
+              <label htmlFor="category">Category</label>
+              <StyledSelect id="category" name="category" value={newGig.category} onChange={handleInputChange} required>
+                {categoriesToUse.map((option) => (
+                  <StyledOption key={option} value={option}>
+                    {option}
+                  </StyledOption>
+                ))}
+              </StyledSelect>
+            </SelectContainer>
+            <InputField label="Location" name="location" value={newGig.location} onChange={handleInputChange} required />
+            <InputField label="City" name="city" value={newGig.city} onChange={handleInputChange} required />
+            <TextAreaField label="Description" name="description" value={newGig.description} onChange={handleInputChange} required />
+            <ImageUpload label="Image" onChange={handleImageUpload} previewImage={previewImage} />
             {error && <ErrorMessage>{error}</ErrorMessage>}
             {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
             <SubmitButton loading={loading} />
@@ -130,8 +183,6 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit, categories }) 
     </>
   );
 };
-
-// Styled components for the modal
 
 const Backdrop = styled.div`
   position: fixed;
@@ -171,7 +222,7 @@ const CloseButton = styled.button`
   top: 10px;
   right: 10px;
   font-size: 24px;
-  color: #ffff;
+  color: #ffffff;
   background: none;
   border: none;
   cursor: pointer;
@@ -183,6 +234,39 @@ const FormTitle = styled.h1`
   text-align: center;
   color: #ffffff;
   font-weight: 600;
+`;
+
+const SelectContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  color: #ffffff;
+`;
+
+const StyledSelect = styled.select`
+  padding: 12px;
+  background-color: #334155;
+  color: #ffffff;
+  border: 2px solid #6366f1;
+  border-radius: 4px;
+  outline: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+
+  &:hover {
+    background-color: #3b4252;
+    border-color: #4f46e5;
+  }
+
+  &:focus {
+    border-color: #4f46e5;
+  }
+`;
+
+const StyledOption = styled.option`
+  background-color: #334155;
+  color: #ffffff;
 `;
 
 const ErrorMessage = styled.div`

@@ -22,9 +22,9 @@ const StyledHelpSection = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 30px;
-  background-color: #1e293b; 
+  background-color: rgba(15, 20, 84, 0.89); 
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 18px;
   width: 100%;
   
   @media (max-width: 768px) {
@@ -37,6 +37,7 @@ const StyledHelpSection = styled.div`
 const StyledHelpText = styled.p`
   font-size: 24px;
   font-weight: 600;
+  padding-left: 2px;
   margin: 0;
   color: #f9fafb;
   flex-grow: 1;
@@ -56,10 +57,11 @@ const StyledHelpText = styled.p`
 
 const StyledButton = styled.button`
   padding: 12px 25px;
-  background-color: #0066cc;
-  color: #f0f0f0;
+  background-color: #dedede;
+  color: #293691;
   border-radius: 20px;
-  border: none;
+  border-color: #63b3ed;
+  border: solid 1px;
   cursor: pointer;
   font-size: 18px;
   font-weight: 500;
@@ -67,7 +69,7 @@ const StyledButton = styled.button`
   
   &:not(:disabled):hover {
     transform: translateY(-2px);
-    background-color: #2862bf;
+    background-color: #dedede;
     box-shadow: 0 6px 8px -2px rgba(59, 130, 246, 0.6), 0 4px 6px -1px rgba(59, 130, 246, 0.1);
   }
 

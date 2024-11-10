@@ -28,7 +28,7 @@ const ContactAndMapSection: React.FC = () => {
           <ContactButton>Send us a message</ContactButton>
         </ContactInfo>
         <MapContainer>
-          <MapImage src="https://placehold.co/800x400" alt="Office Location Map" />
+          <MapImage src="https://www.gmap.ro/MAPS/Google/base/roadmap/Timisoara_Centru.jpg" alt="Office Location Map" />
         </MapContainer>
       </ContactContent>
     </ContactSection>
@@ -36,9 +36,9 @@ const ContactAndMapSection: React.FC = () => {
 };
 
 const ContactSection = styled.section`
-  background-color: #1e293b; /* Dark background */
+  background-color: rgba(15, 20, 84, 1); 
   padding: 30px;
-  border-radius: 12px;
+  border-radius: 18px;
   margin-bottom: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   @media (max-width: 640px) {
@@ -61,10 +61,10 @@ const ContactInfo = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   margin-bottom: 20px;
-  color: #e5e7eb; /* Light text for dark background */
+  color: #fff; /* Light text for dark background */
 `;
 
 const AddressBlock = styled.div`
@@ -75,12 +75,13 @@ const BlockTitle = styled.h3`
   font-size: 18px;
   font-weight: 500;
   margin-bottom: 10px;
-  color: #cbd5e1; /* Lighter gray text */
+  color: #fff; /* Lighter gray text */
 `;
 
 const AddressText = styled.p`
-  color: #94a3b8; /* Soft gray text */
+  color: #fff; /* Soft gray text */
   line-height: 1.6;
+  margin-left: 10px;
 `;
 
 const ContactBlock = styled.div`
@@ -88,15 +89,16 @@ const ContactBlock = styled.div`
 `;
 
 const ContactText = styled.p`
-  color: #94a3b8; /* Soft gray text */
+  color: #fff; /* Soft gray text */
   line-height: 1.6;
+  margin-left: 10px;
 `;
 
 const ContactButton = styled.button`
-  background-color: #3b82f6; /* Blue button */
-  color: #f9fafb; /* Light text */
+  background-color: #dedede; /* Blue button */
+  color: #293691; /* Light text */
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 20px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
@@ -104,7 +106,7 @@ const ContactButton = styled.button`
   border: none;
 
   &:hover {
-    background-color: #2563eb; /* Darker blue on hover */
+    background-color: #dedede; /* Darker blue on hover */
   }
 `;
 
@@ -121,6 +123,9 @@ const MapImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border: dotted 3px;
+  border-radius: 16px;
+  border-color: #fff;
 `;
 
 export default ContactAndMapSection;

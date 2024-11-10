@@ -23,7 +23,7 @@ async function sendVerificationEmail(email: string, token: string) {
 
   try {
     await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'admin@scof.live',
       to: 'ctgmarius@gmail.com',
       subject: 'Verify Your Email!',
       html: `<p>Welcome to n0exp!</p>

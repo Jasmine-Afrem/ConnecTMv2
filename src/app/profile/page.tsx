@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -7,6 +6,8 @@ import ProfileImageUploader from './profileimageuploader';
 import FormField from './formfield';
 import Button from './button';
 import Image from 'next/image';
+import Link from 'next/link';
+import Loading from '@/app/loading/loading'; // Import the Loading component
 
 interface Profile {
   user_id: number;
@@ -30,9 +31,10 @@ const ProfilePage = () => {
     profileImageUrl: '',
   });
   const [userId, setUserId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null);
 
+  // Check user authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -42,7 +44,7 @@ const ProfilePage = () => {
         });
 
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
           setUserId(data.userId);
           setLoggedIn(true);
@@ -50,14 +52,11 @@ const ProfilePage = () => {
           setLoggedIn(false);
           alert(data.message);
         }
-      } catch (error : unknown) {
-        if(error instanceof Error)
-        {
+      } catch (error: unknown) {
+        if (error instanceof Error) {
           setLoggedIn(false);
           alert('Error checking authentication:' + error.message);
-        }
-        else
-        {
+        } else {
           alert('Malakai: Something went wrong');
         }
       }
@@ -66,15 +65,16 @@ const ProfilePage = () => {
     checkAuth();
   }, []);
 
+  // Fetch profile data once the user is authenticated
   const fetchProfile = useCallback(async () => {
     if (!userId) return;
 
-    setLoading(true);
+    setLoading(true); // Start loading when fetching profile
     setError(null);
     try {
       const response = await fetch(`/api/profile?userId=${userId}`);
       const data = await response.json();
-      
+
       if (data.profile) {
         setProfile(data.profile);
         setFormData({
@@ -92,7 +92,7 @@ const ProfilePage = () => {
       setError('Failed to fetch profile data.');
       console.error(err);
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading after fetching is complete
     }
   }, [userId]);
 
@@ -106,7 +106,7 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName) {
@@ -114,7 +114,7 @@ const ProfilePage = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Start loading when updating profile
     setError(null);
     try {
       const response = await fetch('/api/profile', {
@@ -134,7 +134,7 @@ const ProfilePage = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         alert('Profile updated successfully');
         fetchProfile(); // Refresh profile
@@ -145,44 +145,18 @@ const ProfilePage = () => {
       setError('Error updating profile.');
       console.error(err);
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading after update is complete
     }
   };
 
-  const handleDelete = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/profile?userId=${userId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        alert('Profile deleted successfully');
-        setProfile(null); // Clear the profile
-      } else {
-        setError(data.error || 'Failed to delete profile.');
-      }
-    } catch (err) {
-      setError('Error deleting profile.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    // Implement logout functionality
-  };
-
+  // Show the Loading component for 3 seconds while loading is true
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading />; // Show loading component
   }
 
   return (
     <>
+      <BackgroundWrapper />
       <ProfileSettingsContainer>
         <ProfileSettingsTitle>Profile Settings</ProfileSettingsTitle>
         <ProfileFormContainer>
@@ -246,8 +220,9 @@ const ProfilePage = () => {
               <StyledButton type="submit">Save Changes</StyledButton>
             </ButtonWrapper>
             <ActionButtons>
-              <StyledActionButton onClick={handleLogout} className="logout-button">Log Out</StyledActionButton>
-              <StyledActionButton onClick={handleDelete} className="delete-button">Delete Account</StyledActionButton>
+              <Link href="./main">
+                <StyledActionButton>Main</StyledActionButton>
+              </Link>
             </ActionButtons>
           </Form>
         </ProfileFormContainer>
@@ -256,14 +231,24 @@ const ProfilePage = () => {
   );
 };
 
-// Styled components
+const BackgroundWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #424a59;
+  background-image: url('https://www.shutterstock.com/image-vector/business-job-icon-doodle-seamless-600nw-2285217401.jpg');
+  z-index: -1;
+`;
+
 const ProfileSettingsContainer = styled.section`
   max-width: 90%;
   margin: 20px auto;
   padding: 30px;
-  background-color: #1e293b;
-  border-radius: 16px;
-  width: 100%;
+  background-color: rgba(15, 20, 84, 0.97);
+  border-radius: 32px;
+  width: 50%;
   max-width: 1200px;
   color: white;
   text-align: left;
@@ -276,8 +261,8 @@ const ProfileSettingsContainer = styled.section`
 `;
 
 const ProfileSettingsTitle = styled.h1`
-  font-size: 16px;
-  font-weight: 1000;
+  font-size: 24px;
+  font-weight: 1600;
   color: #ffffff;
   margin-bottom: 20px;
   text-align: left;

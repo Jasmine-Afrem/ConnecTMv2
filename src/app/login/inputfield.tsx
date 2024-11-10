@@ -52,10 +52,10 @@ const Input = styled.input`
   width: 100%;
   padding: 24px 28px;
   max-height:60px;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: #fff;
   border: 2px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
-  color: #ffffff;
+  color: #3d50d4;
   font-size: 16px;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

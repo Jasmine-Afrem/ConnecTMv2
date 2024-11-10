@@ -127,10 +127,11 @@ const Container = styled.div`
   height: 100vh;
   width: 100vw;
   background-color: #424a59;
+  background-image: url('https://www.shutterstock.com/image-vector/business-job-icon-doodle-seamless-600nw-2285217401.jpg');
 `;
 
 const SignupCard = styled.main`
-  background-color: rgba(31, 41, 55, 0.95);
+  background-color: rgba(15, 20, 84, 0.8); 
   padding: 40px;
   border-radius: 20px;
   width: 50%;
@@ -151,7 +152,7 @@ const SignupCard = styled.main`
     margin-bottom: 42px;
     text-align: center;
     letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #fafcff, #c9ccd1);
+    background: linear-gradient(135deg, #ffff, #ffff);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;

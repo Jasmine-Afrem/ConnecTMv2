@@ -1,7 +1,9 @@
-'use client'; 
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import L from 'leaflet'; // Leaflet import
+import L from 'leaflet';
+import MapComponent from './map'; // Import the MapComponent
 
 interface SearchSectionProps {
   location: string;
@@ -27,10 +29,17 @@ const SearchSection: React.FC<SearchSectionProps> = ({
     'Education',
     'Entertainment',
     'Services',
-  ]; // Example categories
-  
-  const [showMap, setShowMap] = useState(false); // Controls map visibility
+  ];
+
+  const [showMap, setShowMap] = useState(false);
   const [selectedLatLng, setSelectedLatLng] = useState<L.LatLng | null>(null);
+
+  // useEffect to set a default location if none is provided
+  useEffect(() => {
+    if (!location) {
+      setLocation('New York');  // Example default location
+    }
+  }, [location, setLocation]);  // Runs only when the location is empty
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
@@ -48,23 +57,6 @@ const SearchSection: React.FC<SearchSectionProps> = ({
     setSelectedLatLng(e.latlng);
     setLocation(`Lat: ${e.latlng.lat.toFixed(4)}, Lng: ${e.latlng.lng.toFixed(4)}`);
   }, [setLocation]);
-
-  // Initialize Leaflet map when the component mounts
-  useEffect(() => {
-    if (typeof window !== "undefined" && showMap) {
-      const map = L.map("map").setView([51.505, -0.09], 13); // Initialize the map with a default center and zoom
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
-      }).addTo(map);
-
-      map.on("click", onMapClick);
-
-      return () => {
-        map.remove();
-      };
-    }
-  }, [showMap, onMapClick]);
 
   return (
     <SearchContainer>
@@ -87,10 +79,13 @@ const SearchSection: React.FC<SearchSectionProps> = ({
         {showMap && (
           <LocationMapContainer>
             <button onClick={closeLocationMap}>Close Map</button>
-            <div id="map" style={{ height: '400px', width: '100%' }} />
-            {selectedLatLng && (
-              <p>Selected Location: Lat: {selectedLatLng.lat.toFixed(4)}, Lng: {selectedLatLng.lng.toFixed(4)}</p>
-            )}
+            <div style={{ height: '400px', width: '100%' }}>
+              <MapComponent
+                lat={selectedLatLng?.lat ?? 51.505}
+                lng={selectedLatLng?.lng ?? -0.09}
+                onMapClick={onMapClick}
+              />
+            </div>
           </LocationMapContainer>
         )}
 
@@ -121,7 +116,8 @@ const SearchSection: React.FC<SearchSectionProps> = ({
     </SearchContainer>
   );
 };
-// Styled components 
+
+// Styled components
 
 const Headline = styled.h2`
   font-size: 2rem;
@@ -135,9 +131,8 @@ const Headline = styled.h2`
   }
 `;
 
-
 const SearchContainer = styled.section`
-  background-color: #1e293b;
+  background-color: rgba(15, 20, 84, 0.89); 
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 30px;
@@ -152,10 +147,10 @@ const SearchForm = styled.form`
   flex-direction: column;
   gap: 20px;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   width: 100%;
   max-width: 600px;
-  margin: 0 auto 20px auto;
+  margin: 0 auto;
 `;
 
 const LocationContainer = styled.div`
@@ -168,9 +163,9 @@ const LocationContainer = styled.div`
 const LocationInput = styled.input`
   padding: 15px 20px;
   border-radius: 15px;
-  border: 1px solid #374151;
-  background-color: #374151;
-  color: #f9fafb;
+  border: 1px solid #dedede;
+  background-color: #dedede;
+  color: #31377a;
   width: 90%;
   font-size: 18px;
   transition: all 0.2s ease;
@@ -186,9 +181,13 @@ const LocationInput = styled.input`
 `;
 
 const LocationButton = styled.button`
-  padding: 10px;
+  padding: 12px;
+  padding-left: 16x;
+  padding-right: 13px;
+  max-height: 70px;
+  max-width: 130px;
   border-radius: 50%;
-  background-color: #374151;
+  background-color: #dedede;
   color: #f9fafb;
   border: none;
   cursor: pointer;
@@ -205,13 +204,13 @@ const LocationMapContainer = styled.div`
   width: 100%;
   max-width: 600px;
   padding: 10px;
-  background-color: #2d3c4e;
+  background-color: #dedede;
   border-radius: 10px;
 
   button {
     padding: 10px;
-    background-color: #374151;
-    color: white;
+    background-color: #dedede;
+    color: #31377a;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -234,28 +233,28 @@ const RadiusInput = styled.input`
   height: 8px;
   border-radius: 4px;
   appearance: none;
-  background-color: #374151;
+  background-color: #dedede;
 `;
 
 const RadiusLabel = styled.span`
   min-width: 60px;
-  color: #94a3b8;
+  color: #dedede;
   font-size: 14px;
 `;
 
 const CategorySelect = styled.select`
   padding: 15px 20px;
   border-radius: 15px;
-  border: 1px solid #374151;
-  background-color: #374151;
-  color: #f9fafb;
+  border: 1px solid #dedede;
+  background-color: #dedede;
+  color: #31377a;
   font-size: 18px;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
 
   &::placeholder {
-    color: #94a3b8;
+    color: #31377a;
   }
 
   @media (max-width: 640px) {

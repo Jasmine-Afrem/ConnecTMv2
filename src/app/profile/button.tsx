@@ -8,8 +8,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const StyledButton = styled.button<ButtonProps>`
-  background-color: #4caf50;
-  color: white;
+  background-color: #dedede;
+  color: #293691;
   padding: 10px;
   border-radius: 25px;
   cursor: pointer;
@@ -18,18 +18,7 @@ const StyledButton = styled.button<ButtonProps>`
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #45a049;
-  }
-
-  &.logout-button,
-  &.delete-button {
-    background-color: rgba(255, 68, 68, 0.15);
-    color: rgba(255, 68, 68, 1);
-    border: 1px solid rgba(255, 68, 68, 0.8);
-
-    &:hover {
-      background-color: rgba(255, 68, 68, 0.25);
-    }
+    background-color: #b5b5b5;
   }
 `;
 

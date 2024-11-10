@@ -2,9 +2,12 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useRouter } from 'next/navigation';
 
 interface User {
   email: string;
+  id: string;
+  profilePicture?: string;
 }
 
 interface HeaderProps {
@@ -15,10 +18,29 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user, skillPoints, signIn, signOut }) => {
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const router = useRouter();
+
+  const toggleProfileMenu = () => {
+    setShowProfileMenu(!showProfileMenu);
+  };
 
   const toggleMobileMenu = () => {
     setShowMobileMenu(!showMobileMenu);
+  };
+
+  const goToProfile = () => {
+    router.push('/profile');
+  };
+
+  const goToFunds = () => {
+    router.push('/funds');
+  };
+
+  const logout = () => {
+    signOut();
+    setShowProfileMenu(false);
   };
 
   return (
@@ -26,48 +48,48 @@ const Header: React.FC<HeaderProps> = ({ user, skillPoints, signIn, signOut }) =
       <LogoSection>
         <StyledLogo>ConnecTM</StyledLogo>
 
-        {/* Mobile Hamburger Button (only for small screens) */}
         <MobileMenuButton onClick={toggleMobileMenu} aria-label="Toggle mobile menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 12h18M3 6h18M3 18h18" />
           </svg>
         </MobileMenuButton>
 
-        {/* Full NavBar for larger screens */}
-        <StyledNav>
-          <NavLink href="/">Home</NavLink>
-          <NavLink href="/about">About Us</NavLink>
-          <SignInButton onClick={() => signIn("test@test.com", "password")}>
-            Sign In
-          </SignInButton>
-        </StyledNav>
-
-        {/* Mobile Dropdown Menu */}
+        {/* Conditional rendering instead of using the 'show' prop */}
         {showMobileMenu && (
-          <MobileDropdownMenu>
+          <StyledNav>
             <NavLink href="/">Home</NavLink>
             <NavLink href="/about">About Us</NavLink>
-            <NavLink href="#" onClick={() => signIn("test@test.com", "password")}>
-              Sign In
-            </NavLink>
-          </MobileDropdownMenu>
+            <NavLink href="/contact">Contact</NavLink>
+          </StyledNav>
         )}
       </LogoSection>
 
-      {/* Auth Section for when the user is logged in */}
-      {user ? (
-        <UserSection>
-          <UserInfo>
-            Welcome, {user.email}
-            <SkillPoints>{skillPoints} SP</SkillPoints>
-          </UserInfo>
-          <SignOutButton onClick={signOut}>Sign Out</SignOutButton>
-        </UserSection>
-      ) : null}
+      <UserSection>
+        {user ? (
+          <>
+            <SkillPointsBox>Skill Points: {skillPoints}</SkillPointsBox>
+            <ProfileButton onClick={toggleProfileMenu}>
+              <ProfileImage src={user.profilePicture || 'https://via.placeholder.com/40'} alt="Profile" />
+            </ProfileButton>
+
+            {showProfileMenu && (
+              <ProfileMenu>
+                <MenuItem>{user.email}</MenuItem>
+                <MenuItem onClick={goToProfile}>View Profile</MenuItem>
+                <MenuItem onClick={goToFunds}>View Funds</MenuItem>
+                <MenuItem onClick={logout}>Log Out</MenuItem>
+              </ProfileMenu>
+            )}
+          </>
+        ) : (
+          <SignInButton onClick={() => signIn("test@test.com", "password")}>Sign In</SignInButton>
+        )}
+      </UserSection>
     </StyledHeader>
   );
 };
 
+// Styled components
 const StyledHeader = styled.header`
   display: flex;
   justify-content: space-between;
@@ -80,12 +102,10 @@ const StyledHeader = styled.header`
   position: sticky;
   top: 20px;
   z-index: 10;
-  backdrop-filter: blur(10px);
 `;
 
 const LogoSection = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
   width: 100%;
 `;
@@ -100,62 +120,55 @@ const MobileMenuButton = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 10px;
   color: #f0f0f0;
   display: none;
 
   @media (max-width: 640px) {
-    display: block; /* Show hamburger button on small screens */
+    display: block;
   }
 `;
 
 const StyledNav = styled.nav`
   display: flex;
-  gap: 30px;
-  align-items: center;
-  @media (max-width: 640px) {
-    display: none; /* Hide nav links on small screens */
-  }
-`;
-
-const MobileDropdownMenu = styled.div`
-  display: flex;
-  flex-direction: column;
   gap: 20px;
-  position: absolute;
-  top: 80px; /* Position the dropdown below the header */
-  right: 30px;
-  background-color: #333;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  z-index: 20;
+  align-items: center;
 
-  a {
-    color: #f0f0f0;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 500;
-    padding: 10px;
+  @media (max-width: 640px) {
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background-color: #333;
+    padding: 15px;
     border-radius: 8px;
-
-    &:hover {
-      background-color: #444;
-    }
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   }
 `;
 
 const NavLink = styled.a`
   color: #f0f0f0;
   text-decoration: none;
-  padding: 10px 20px;
-  font-size: 18px;
-  font-weight: 500;
+  padding: 10px;
+  font-size: 16px;
 
   &:hover {
     background-color: #444;
     border-radius: 8px;
   }
+`;
+
+const UserSection = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const SkillPointsBox = styled.div`
+  background-color: #333;
+  color: #f0f0f0;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-right: 15px;
 `;
 
 const SignInButton = styled.button`
@@ -165,52 +178,42 @@ const SignInButton = styled.button`
   border-radius: 20px;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 500;
-  transition: all 0.3s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    background-color: #2862bf;
-    box-shadow: 0 6px 8px -2px rgba(59, 130, 246, 0.6), 0 4px 6px -1px rgba(59, 130, 246, 0.1);
-  }
-
-  @media (max-width: 640px) {
-    display: none; /* Hide the button on mobile */
+    background-color: #005bb5;
   }
 `;
 
-const UserSection = styled.div`
-  display: flex;
-  gap: 20px;
-  align-items: center;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #f0f0f0;
-`;
-
-const SkillPoints = styled.span`
-  background-color: #28a745;
-  color: #f0f0f0;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 14px;
-`;
-
-const SignOutButton = styled.button`
-  padding: 10px 20px;
-  background-color: #cc3333;
-  color: #f0f0f0;
-  border-radius: 20px;
+const ProfileButton = styled.button`
+  background-color: transparent;
   border: none;
   cursor: pointer;
+  padding: 10px;
+`;
 
-  @media (max-width: 640px) {
-    display: none;
+const ProfileImage = styled.img`
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+`;
+
+const ProfileMenu = styled.div`
+  background-color: #333;
+  position: absolute;
+  top: 70px;
+  right: 30px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+`;
+
+const MenuItem = styled.div`
+  color: #f0f0f0;
+  padding: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #444;
   }
 `;
 

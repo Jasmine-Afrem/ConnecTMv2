@@ -32,6 +32,7 @@
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028",
     "react-hot-toast": "^2.4.1",
+    "react-leaflet": "^4.2.1",
     "resend": "^4.0.1-alpha.0",
     "styled-components": "^6.1.13",
     "uuid": "^11.0.2"
@@ -42,7 +43,7 @@
     "@types/node": "^20",
     "@types/node-fetch": "^2.6.11",
     "@types/nodemailer": "^6.4.16",
-    "@types/react": "^18",
+    "@types/react": "^18.3.12",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "15.0.2",

@@ -60,17 +60,18 @@ const FieldContainer = styled.div`
 
 const Label = styled.label`
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 700px;
 `;
 
 const StyledInput = styled.input`
   width: 100%;
   padding: 8px 12px;
   max-height: 50px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  background-color: #dedede;
+  border: 2px solid #31377a;
   border-radius: 12px;
-  color: #ffffff;
+  color: #31377a;
   font-size: 14px;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -86,10 +87,10 @@ const StyledTextarea = styled.textarea`
   width: 100%;
   padding: 8px 12px;
   min-height: 80px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  background-color: #dedede;
+  border: 2px solid #31377a;
   border-radius: 12px;
-  color: #ffffff;
+  color: #31377a;
   font-size: 14px;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
